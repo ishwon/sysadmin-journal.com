@@ -28,17 +28,20 @@ class MediaController extends Controller
             ->sort()
             ->values();
 
-        $images = collect($disk->files($fullPath))
-            ->filter(fn (string $file) => preg_match('/\.(jpe?g|png|gif|webp|svg|avif)$/i', $file))
+        $allFiles = collect($disk->files($fullPath))
+            ->filter(fn (string $file) => preg_match('/\.(jpe?g|png|gif|webp|svg|avif|pdf)$/i', $file))
             ->map(fn (string $file) => [
                 'name' => basename($file),
                 'path' => $file,
                 'url' => '/content/'.$file,
                 'size' => $disk->size($file),
                 'modified' => $disk->lastModified($file),
+                'type' => preg_match('/\.pdf$/i', $file) ? 'pdf' : 'image',
             ])
-            ->sortByDesc('modified')
-            ->values();
+            ->sortByDesc('modified');
+
+        $images = $allFiles->where('type', 'image')->values();
+        $pdfs = $allFiles->where('type', 'pdf')->values();
 
         $breadcrumbs = $this->buildBreadcrumbs($currentPath);
 
@@ -46,6 +49,7 @@ class MediaController extends Controller
             'currentPath' => $currentPath,
             'directories' => $directories,
             'images' => $images,
+            'pdfs' => $pdfs,
             'breadcrumbs' => $breadcrumbs,
         ]);
     }
@@ -109,7 +113,7 @@ class MediaController extends Controller
     {
         $request->validate([
             'photos' => ['required', 'array', 'max:20'],
-            'photos.*' => ['required', 'image', 'max:10240'],
+            'photos.*' => ['required', 'file', 'mimes:jpeg,jpg,png,gif,webp,svg,avif,pdf', 'max:10240'],
             'current_path' => ['nullable', 'string'],
         ]);
 
@@ -117,14 +121,14 @@ class MediaController extends Controller
         $storagePath = $this->basePath.($currentPath ? '/'.$currentPath : '');
 
         $count = 0;
-        foreach ($request->file('photos') as $photo) {
-            $photo->storeAs($storagePath, $photo->getClientOriginalName(), 'public');
+        foreach ($request->file('photos') as $file) {
+            $file->storeAs($storagePath, $file->getClientOriginalName(), 'public');
             $count++;
         }
 
         return redirect()
             ->route('dashboard.media.index', ['path' => $currentPath])
-            ->with('success', $count.' '.str('photo')->plural($count).' uploaded.');
+            ->with('success', $count.' '.str('file')->plural($count).' uploaded.');
     }
 
     public function deletePhoto(Request $request): RedirectResponse

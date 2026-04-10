@@ -45,7 +45,7 @@
         </button>
         <button @click="showUpload = true" class="inline-flex items-center px-3 py-2 bg-emerald-500 text-white rounded-md text-sm font-medium hover:bg-emerald-600 transition">
             <svg class="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
-            Upload Photos
+            Upload Files
         </button>
     </div>
 
@@ -72,14 +72,14 @@
     {{-- Upload modal --}}
     <div x-show="showUpload" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" @keydown.escape.window="showUpload = false">
         <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md" @click.outside="showUpload = false">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">Upload Photos</h3>
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Upload Files</h3>
             <form method="POST" action="{{ route('dashboard.media.upload') }}" enctype="multipart/form-data">
                 @csrf
                 <input type="hidden" name="current_path" value="{{ $currentPath }}">
                 <div class="mb-4">
-                    <label for="photos" class="block text-sm font-medium text-gray-700 mb-1">Select images</label>
-                    <input type="file" name="photos[]" id="photos" multiple accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100" required>
-                    <p class="mt-1 text-xs text-gray-400">Max 10 MB per file. Up to 20 files at once.</p>
+                    <label for="photos" class="block text-sm font-medium text-gray-700 mb-1">Select images or PDFs</label>
+                    <input type="file" name="photos[]" id="photos" multiple accept="image/*,.pdf,application/pdf" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100" required>
+                    <p class="mt-1 text-xs text-gray-400">Images and PDFs. Max 10 MB per file. Up to 20 files at once.</p>
                 </div>
                 <div class="flex justify-end space-x-2">
                     <button type="button" @click="showUpload = false" class="px-4 py-2 text-sm text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200">Cancel</button>
@@ -149,7 +149,41 @@
     </div>
     @endif
 
-    @if($directories->isEmpty() && $images->isEmpty())
+    {{-- PDFs --}}
+    @if($pdfs->isNotEmpty())
+    <div class="mb-6">
+        <h3 class="text-sm font-medium text-gray-500 uppercase mb-3">PDFs ({{ $pdfs->count() }})</h3>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            @foreach($pdfs as $pdf)
+            <div class="group relative bg-white rounded-lg shadow overflow-hidden">
+                <a href="{{ $pdf['url'] }}" target="_blank" class="block aspect-square flex items-center justify-center bg-gray-50">
+                    <svg class="h-16 w-16 text-red-500" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 2l5 5h-5V4zM6 20V4h5v7h7v9H6z"/><path d="M8 13h2.5c.83 0 1.5.67 1.5 1.5S11.33 16 10.5 16H9v2H8v-5zm1 2h1.5c.28 0 .5-.22.5-.5s-.22-.5-.5-.5H9v1zm4-2h2c1.1 0 2 .9 2 2v1c0 1.1-.9 2-2 2h-2v-5zm1 4h1c.55 0 1-.45 1-1v-1c0-.55-.45-1-1-1h-1v3z"/></svg>
+                </a>
+                <div class="p-2">
+                    <p class="text-xs text-gray-700 truncate" title="{{ $pdf['name'] }}">{{ $pdf['name'] }}</p>
+                    <p class="text-xs text-gray-400">{{ number_format($pdf['size'] / 1024, 0) }} KB</p>
+                </div>
+                <div class="absolute top-1 right-1 hidden group-hover:flex items-center space-x-1">
+                    <button @click.stop="copyPath('{{ $pdf['url'] }}')" class="p-1 rounded bg-white/80 text-gray-600 hover:bg-white" title="Copy path">
+                        <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                    </button>
+                    <form method="POST" action="{{ route('dashboard.media.delete-photo') }}" class="inline" onsubmit="return confirm('Delete this file?')">
+                        @csrf
+                        @method('DELETE')
+                        <input type="hidden" name="current_path" value="{{ $currentPath }}">
+                        <input type="hidden" name="file" value="{{ $pdf['name'] }}">
+                        <button type="submit" class="p-1 rounded bg-red-100 text-red-600 hover:bg-red-200" title="Delete file">
+                            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                        </button>
+                    </form>
+                </div>
+            </div>
+            @endforeach
+        </div>
+    </div>
+    @endif
+
+    @if($directories->isEmpty() && $images->isEmpty() && $pdfs->isEmpty())
     <div class="text-center py-16 text-gray-400">
         <svg class="mx-auto h-12 w-12 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
         <p>This folder is empty.</p>
