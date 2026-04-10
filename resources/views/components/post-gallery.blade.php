@@ -1,14 +1,17 @@
 @if($post->gallery && $post->gallery->images->isNotEmpty())
-<div class="mt-12 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8" x-data="{ lightbox: null }">
-    <h2 class="text-2xl font-bold text-gray-900 mb-6">{{ $post->gallery->title }}</h2>
-    @if($post->gallery->description)
-    <p class="text-gray-500 mb-6">{{ $post->gallery->description }}</p>
-    @endif
+<div class="mt-10 max-w-4xl mx-auto" x-data="{ lightbox: null }">
+    <hr class="border-gray-200 mb-8">
+    <h3 class="text-sm font-semibold uppercase tracking-wider text-gray-400 mb-6">Gallery</h3>
     <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
         @foreach($post->gallery->images as $index => $image)
-        <div class="cursor-pointer overflow-hidden rounded-lg" @click="lightbox = {{ $index }}">
-            <img src="{{ $image->image_path }}" alt="{{ $image->alt_text ?? $image->caption ?? '' }}" class="w-full h-48 object-cover hover:scale-105 transition duration-300">
-        </div>
+        <figure class="cursor-pointer" @click="lightbox = {{ $index }}">
+            <div class="overflow-hidden rounded-lg">
+                <img src="{{ $image->image_path }}" alt="{{ $image->alt_text ?? $image->caption ?? '' }}" class="w-full h-48 object-cover hover:scale-105 transition duration-300">
+            </div>
+            @if($image->caption)
+            <figcaption class="mt-2 text-xs text-gray-500">{{ $image->caption }}</figcaption>
+            @endif
+        </figure>
         @endforeach
     </div>
 

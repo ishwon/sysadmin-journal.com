@@ -49,8 +49,8 @@
         <div class="mt-6 max-w-4xl prose prose-emerald prose-lg text-gray-600 mx-auto">
             {!! $post->html !!}
         </div>
+
+        @include('components.post-gallery', ['post' => $post])
     </div>
 </div>
-
-@include('components.post-gallery', ['post' => $post])
 @endsection
