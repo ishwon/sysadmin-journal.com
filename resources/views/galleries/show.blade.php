@@ -25,7 +25,12 @@
                 <button @click="lightbox = Math.max(0, lightbox - 1)" class="absolute left-4 text-white text-3xl">&lsaquo;</button>
                 <button @click="lightbox = Math.min({{ count($gallery->images) - 1 }}, lightbox + 1)" class="absolute right-4 text-white text-3xl">&rsaquo;</button>
                 @foreach($gallery->images as $index => $image)
-                <img x-show="lightbox === {{ $index }}" src="{{ $image->image_path }}" alt="{{ $image->alt_text }}" class="max-h-[90vh] max-w-[90vw] object-contain">
+                <div x-show="lightbox === {{ $index }}" class="flex flex-col items-center">
+                    <img src="{{ $image->image_path }}" alt="{{ $image->alt_text }}" class="max-h-[80vh] max-w-[90vw] object-contain">
+                    @if($image->caption)
+                    <p class="mt-3 text-sm text-gray-300">{{ $image->caption }}</p>
+                    @endif
+                </div>
                 @endforeach
             </div>
         </div>
