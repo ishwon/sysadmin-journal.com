@@ -1,0 +1,34 @@
+figure {
+	display: inline-block;
+}
+figure img {
+	vertical-align: top;
+}
+figure figcaption {
+	text-align: center;
+    font-family: 'Courier New', Courier, monospace;
+	font-size: 9px;
+}
+
+code {
+    background-color: #e5e7eb;
+    display: inline-flex;
+    padding-top: 0.125rem;
+    padding-bottom: 0.125rem;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+    border-radius: 0.25rem;
+}
+
+blockquote {
+    font-size: 21px;
+    line-height: 110%;
+}
+
+.lato {
+    font-family: Lato, sans-serif;
+}
+
+.kg-width-wide { }
+
+.kg-width-full { }
