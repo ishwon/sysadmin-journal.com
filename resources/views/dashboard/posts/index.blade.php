@@ -32,6 +32,7 @@
                 </td>
                 <td class="px-6 py-4 text-sm text-gray-500">{{ $post->published_at?->format('d M Y') ?? $post->created_at->format('d M Y') }}</td>
                 <td class="px-6 py-4 text-right text-sm space-x-2">
+                    <a href="{{ route('dashboard.posts.show', $post) }}" class="text-blue-600 hover:text-blue-800" target="_blank">Preview</a>
                     <a href="/{{ $post->slug }}" class="text-gray-500 hover:text-gray-700" target="_blank">View</a>
                     <a href="{{ route('dashboard.posts.edit', $post) }}" class="text-emerald-600 hover:text-emerald-800">Edit</a>
                     <form method="POST" action="{{ route('dashboard.posts.destroy', $post) }}" class="inline" onsubmit="return confirm('Delete this post?')">

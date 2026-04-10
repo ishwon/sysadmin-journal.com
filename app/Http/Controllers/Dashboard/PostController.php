@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
+use App\Models\Gallery;
 use App\Models\Post;
 use App\Models\Tag;
 use Illuminate\Http\RedirectResponse;
@@ -77,6 +78,14 @@ class PostController extends Controller
         $post->authors()->attach(auth()->id(), ['sort_order' => 0]);
 
         return redirect()->route('dashboard.posts.index')->with('success', 'Post created.');
+    }
+
+    public function show(Post $post): View
+    {
+        $post->load(['tags', 'authors']);
+        $post->html = $this->renderGalleryShortcodes($post->html);
+
+        return view('dashboard.posts.preview', ['post' => $post]);
     }
 
     public function edit(Post $post): View
@@ -175,5 +184,28 @@ class PostController extends Controller
         }
 
         return $content;
+    }
+
+    private function renderGalleryShortcodes(?string $html): ?string
+    {
+        if (! $html) {
+            return $html;
+        }
+
+        return (string) preg_replace_callback('/\[gallery:([a-z0-9-]+)\]/', function ($matches) {
+            $gallery = Gallery::where('slug', $matches[1])->with('images')->first();
+
+            if (! $gallery) {
+                return '';
+            }
+
+            $images = $gallery->images->map(function ($image) {
+                $alt = e($image->alt_text ?? $image->caption ?? '');
+
+                return "<div><img src=\"{$image->image_path}\" alt=\"{$alt}\" class=\"w-full h-48 object-cover rounded-lg\"></div>";
+            })->join("\n");
+
+            return "<div class=\"grid grid-cols-2 md:grid-cols-3 gap-4 my-8\">{$images}</div>";
+        }, $html);
     }
 }
