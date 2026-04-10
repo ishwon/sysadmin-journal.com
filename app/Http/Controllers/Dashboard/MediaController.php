@@ -153,9 +153,9 @@ class MediaController extends Controller
             ->with('success', 'Photo deleted.');
     }
 
-    private function sanitizePath(string $path): string
+    private function sanitizePath(?string $path): string
     {
-        $path = trim($path, '/');
+        $path = trim($path ?? '', '/');
         $path = str_replace('\\', '/', $path);
 
         // Reject any path traversal attempts
