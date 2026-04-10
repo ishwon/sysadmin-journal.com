@@ -51,15 +51,15 @@ class SitemapController extends Controller
 
         foreach ($posts as $post) {
             $xml .= "  <url>\n";
-            $xml .= "    <loc>{$baseUrl}/{$post->slug}</loc>\n";
+            $xml .= '    <loc>'.$this->xml("{$baseUrl}/{$post->slug}")."</loc>\n";
             $xml .= '    <lastmod>'.$post->updated_at->toIso8601String()."</lastmod>\n";
 
             if ($post->feature_image) {
                 $imageUrl = $this->resolveImageUrl($baseUrl, $post->feature_image);
                 $xml .= "    <image:image>\n";
-                $xml .= "      <image:loc>{$imageUrl}</image:loc>\n";
+                $xml .= '      <image:loc>'.$this->xml($imageUrl)."</image:loc>\n";
                 if ($post->feature_image_caption) {
-                    $xml .= '      <image:caption>'.e(strip_tags($post->feature_image_caption))."</image:caption>\n";
+                    $xml .= '      <image:caption>'.$this->xml(strip_tags($post->feature_image_caption))."</image:caption>\n";
                 }
                 $xml .= "    </image:image>\n";
             }
@@ -80,13 +80,13 @@ class SitemapController extends Controller
 
         foreach ($pages as $page) {
             $xml .= "  <url>\n";
-            $xml .= "    <loc>{$baseUrl}/{$page->slug}</loc>\n";
+            $xml .= '    <loc>'.$this->xml("{$baseUrl}/{$page->slug}")."</loc>\n";
             $xml .= '    <lastmod>'.$page->updated_at->toIso8601String()."</lastmod>\n";
 
             if ($page->feature_image) {
                 $imageUrl = $this->resolveImageUrl($baseUrl, $page->feature_image);
                 $xml .= "    <image:image>\n";
-                $xml .= "      <image:loc>{$imageUrl}</image:loc>\n";
+                $xml .= '      <image:loc>'.$this->xml($imageUrl)."</image:loc>\n";
                 $xml .= "    </image:image>\n";
             }
 
@@ -106,13 +106,13 @@ class SitemapController extends Controller
 
         foreach ($authors as $author) {
             $xml .= "  <url>\n";
-            $xml .= "    <loc>{$baseUrl}/author/{$author->slug}</loc>\n";
+            $xml .= '    <loc>'.$this->xml("{$baseUrl}/author/{$author->slug}")."</loc>\n";
             $xml .= '    <lastmod>'.$author->updated_at->toIso8601String()."</lastmod>\n";
 
             if ($author->profile_image) {
                 $imageUrl = $this->resolveImageUrl($baseUrl, $author->profile_image);
                 $xml .= "    <image:image>\n";
-                $xml .= "      <image:loc>{$imageUrl}</image:loc>\n";
+                $xml .= '      <image:loc>'.$this->xml($imageUrl)."</image:loc>\n";
                 $xml .= "    </image:image>\n";
             }
 
@@ -132,13 +132,13 @@ class SitemapController extends Controller
 
         foreach ($tags as $tag) {
             $xml .= "  <url>\n";
-            $xml .= "    <loc>{$baseUrl}/tag/{$tag->slug}</loc>\n";
+            $xml .= '    <loc>'.$this->xml("{$baseUrl}/tag/{$tag->slug}")."</loc>\n";
             $xml .= '    <lastmod>'.$tag->updated_at->toIso8601String()."</lastmod>\n";
 
             if ($tag->feature_image) {
                 $imageUrl = $this->resolveImageUrl($baseUrl, $tag->feature_image);
                 $xml .= "    <image:image>\n";
-                $xml .= "      <image:loc>{$imageUrl}</image:loc>\n";
+                $xml .= '      <image:loc>'.$this->xml($imageUrl)."</image:loc>\n";
                 $xml .= "    </image:image>\n";
             }
 
@@ -163,5 +163,10 @@ class SitemapController extends Controller
         }
 
         return $baseUrl.$imagePath;
+    }
+
+    private function xml(string $value): string
+    {
+        return htmlspecialchars($value, ENT_XML1, 'UTF-8');
     }
 }
