@@ -88,6 +88,19 @@
             </div>
             @endif
 
+            @if(isset($galleries))
+            <div class="bg-white rounded-lg shadow p-6">
+                <label for="gallery_id" class="block text-sm font-medium text-gray-700 mb-1">Gallery</label>
+                <select name="gallery_id" id="gallery_id" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500 text-sm">
+                    <option value="">None</option>
+                    @foreach($galleries as $gallery)
+                    <option value="{{ $gallery->id }}" {{ old('gallery_id', $post->gallery_id ?? '') == $gallery->id ? 'selected' : '' }}>{{ $gallery->title }}</option>
+                    @endforeach
+                </select>
+                <p class="mt-1 text-xs text-gray-400">Displayed at the bottom of the article.</p>
+            </div>
+            @endif
+
             <div class="bg-white rounded-lg shadow p-6">
                 <h3 class="text-sm font-medium text-gray-700 mb-3">SEO</h3>
                 <div class="space-y-3">

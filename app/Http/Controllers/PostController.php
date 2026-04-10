@@ -27,7 +27,7 @@ class PostController extends Controller
     {
         $post = Post::published()
             ->where('slug', $slug)
-            ->with(['tags', 'authors'])
+            ->with(['tags', 'authors', 'gallery.images'])
             ->firstOrFail();
 
         $post->html = $this->renderGalleryShortcodes($post->html);

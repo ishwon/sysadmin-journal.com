@@ -24,8 +24,9 @@ class PostController extends Controller
     public function create(): View
     {
         $tags = Tag::orderBy('name')->get();
+        $galleries = Gallery::orderBy('title')->get();
 
-        return view('dashboard.posts.create', ['tags' => $tags]);
+        return view('dashboard.posts.create', ['tags' => $tags, 'galleries' => $galleries]);
     }
 
     public function store(Request $request): RedirectResponse
@@ -45,6 +46,7 @@ class PostController extends Controller
             'meta_description' => ['nullable', 'string'],
             'og_image' => ['nullable', 'string'],
             'twitter_image' => ['nullable', 'string'],
+            'gallery_id' => ['nullable', 'exists:galleries,id'],
         ]);
 
         $slug = $this->resolveSlug($validated['slug']);
@@ -69,6 +71,7 @@ class PostController extends Controller
             'meta_description' => $validated['meta_description'],
             'og_image' => $validated['og_image'],
             'twitter_image' => $validated['twitter_image'],
+            'gallery_id' => $validated['gallery_id'],
         ]);
 
         if (! empty($validated['tags'])) {
@@ -82,7 +85,7 @@ class PostController extends Controller
 
     public function show(Post $post): View
     {
-        $post->load(['tags', 'authors']);
+        $post->load(['tags', 'authors', 'gallery.images']);
         $post->html = $this->renderGalleryShortcodes($post->html);
 
         return view('dashboard.posts.preview', ['post' => $post]);
@@ -91,8 +94,9 @@ class PostController extends Controller
     public function edit(Post $post): View
     {
         $tags = Tag::orderBy('name')->get();
+        $galleries = Gallery::orderBy('title')->get();
 
-        return view('dashboard.posts.edit', ['post' => $post, 'tags' => $tags]);
+        return view('dashboard.posts.edit', ['post' => $post, 'tags' => $tags, 'galleries' => $galleries]);
     }
 
     public function update(Request $request, Post $post): RedirectResponse
@@ -112,6 +116,7 @@ class PostController extends Controller
             'meta_description' => ['nullable', 'string'],
             'og_image' => ['nullable', 'string'],
             'twitter_image' => ['nullable', 'string'],
+            'gallery_id' => ['nullable', 'exists:galleries,id'],
         ]);
 
         $slug = $validated['slug'] !== $post->slug ? $this->resolveSlug($validated['slug'], $post->id) : $post->slug;
@@ -135,6 +140,7 @@ class PostController extends Controller
             'meta_description' => $validated['meta_description'],
             'og_image' => $validated['og_image'],
             'twitter_image' => $validated['twitter_image'],
+            'gallery_id' => $validated['gallery_id'],
         ]);
 
         $post->tags()->sync($validated['tags'] ?? []);

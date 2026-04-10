@@ -90,5 +90,7 @@
             </div>
         </div>
     </div>
+
+    @include('components.post-gallery', ['post' => $post])
 </body>
 </html>
