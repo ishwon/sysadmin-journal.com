@@ -51,4 +51,6 @@
         </div>
     </div>
 </div>
+
+@include('components.post-gallery', ['post' => $post])
 @endsection

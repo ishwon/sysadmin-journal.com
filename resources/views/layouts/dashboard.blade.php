@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://use.typekit.net/ikg3vvf.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -34,6 +35,10 @@
                 <a href="{{ route('dashboard.galleries.index') }}" class="flex items-center px-6 py-3 text-sm font-medium {{ request()->routeIs('dashboard.galleries.*') ? 'bg-gray-800 text-emerald-400' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
                     <svg class="mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                     Galleries
+                </a>
+                <a href="{{ route('dashboard.media.index') }}" class="flex items-center px-6 py-3 text-sm font-medium {{ request()->routeIs('dashboard.media.*') ? 'bg-gray-800 text-emerald-400' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
+                    <svg class="mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z" /></svg>
+                    Media
                 </a>
                 <a href="{{ route('dashboard.tags.index') }}" class="flex items-center px-6 py-3 text-sm font-medium {{ request()->routeIs('dashboard.tags.*') ? 'bg-gray-800 text-emerald-400' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
                     <svg class="mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z" /></svg>

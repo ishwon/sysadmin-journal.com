@@ -1,19 +1,12 @@
-<div x-data="{
-    title: '{{ old('title', $post->title ?? '') }}',
-    slug: '{{ old('slug', $post->slug ?? '') }}',
-    slugManual: {{ old('slug', $post->slug ?? '') ? 'true' : 'false' }},
-    contentFormat: '{{ old('content_format', ($post->markdown ?? null) ? 'markdown' : 'html') }}',
-    async generateSlug() {
-        if (this.slugManual && this.slug) return;
-        const response = await fetch('{{ route('dashboard.api.slug-check') }}', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content },
-            body: JSON.stringify({ title: this.title, exclude_id: '{{ $post->id ?? '' }}' })
-        });
-        const data = await response.json();
-        this.slug = data.slug;
-    }
-}">
+<script src="/js/post-form.js"></script>
+
+<div x-data="postForm({
+    title: {{ Js::from(old('title', $post->title ?? '')) }},
+    slug: {{ Js::from(old('slug', $post->slug ?? '')) }},
+    contentFormat: {{ Js::from(old('content_format', ($post->markdown ?? null) ? 'markdown' : 'html')) }},
+    slugCheckUrl: {{ Js::from(route('dashboard.api.slug-check')) }},
+    postId: {{ Js::from($post->id ?? '') }}
+})">
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Main content -->
         <div class="lg:col-span-2 space-y-6">
@@ -26,23 +19,45 @@
                     <label for="slug" class="block text-sm font-medium text-gray-700 mb-1">Slug</label>
                     <input type="text" name="slug" id="slug" x-model="slug" @input="slugManual = true" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500 font-mono text-sm" required>
                 </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Content Format</label>
-                    <div class="flex space-x-4">
-                        <label class="inline-flex items-center">
-                            <input type="radio" name="content_format" value="html" x-model="contentFormat" class="text-emerald-500">
-                            <span class="ml-2 text-sm">HTML</span>
-                        </label>
-                        <label class="inline-flex items-center">
-                            <input type="radio" name="content_format" value="markdown" x-model="contentFormat" class="text-emerald-500">
-                            <span class="ml-2 text-sm">Markdown</span>
-                        </label>
+
+                {{-- Editor / Preview tabs --}}
+                <div class="mb-4 border-b border-gray-200">
+                    <nav class="flex space-x-6 -mb-px">
+                        <button type="button" @click="activeTab = 'editor'" :class="activeTab === 'editor' ? 'border-emerald-500 text-emerald-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'" class="py-2 px-1 border-b-2 text-sm font-medium transition">
+                            Editor
+                        </button>
+                        <button type="button" @click="showPreview()" :class="activeTab === 'preview' ? 'border-emerald-500 text-emerald-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'" class="py-2 px-1 border-b-2 text-sm font-medium transition">
+                            Preview
+                        </button>
+                    </nav>
+                </div>
+
+                {{-- Editor tab --}}
+                <div x-show="activeTab === 'editor'">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Content Format</label>
+                        <div class="flex space-x-4">
+                            <label class="inline-flex items-center">
+                                <input type="radio" name="content_format" value="html" x-model="contentFormat" class="text-emerald-500">
+                                <span class="ml-2 text-sm">HTML</span>
+                            </label>
+                            <label class="inline-flex items-center">
+                                <input type="radio" name="content_format" value="markdown" x-model="contentFormat" class="text-emerald-500">
+                                <span class="ml-2 text-sm">Markdown</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label for="content" class="block text-sm font-medium text-gray-700 mb-1">Content</label>
+                        <textarea name="content" id="content" rows="20" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500 font-mono text-sm">{{ old('content', ($post->markdown ?? null) ?: ($post->html ?? '')) }}</textarea>
                     </div>
                 </div>
-                <div class="mb-4">
-                    <label for="content" class="block text-sm font-medium text-gray-700 mb-1">Content</label>
-                    <textarea name="content" id="content" rows="20" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500 font-mono text-sm">{{ old('content', ($post->markdown ?? null) ?: ($post->html ?? '')) }}</textarea>
+
+                {{-- Preview tab --}}
+                <div x-show="activeTab === 'preview'" x-cloak>
+                    <iframe x-ref="previewFrame" class="w-full border border-gray-200 rounded-md bg-white" style="min-height: 600px;"></iframe>
                 </div>
+
                 <div>
                     <label for="custom_excerpt" class="block text-sm font-medium text-gray-700 mb-1">Custom Excerpt</label>
                     <textarea name="custom_excerpt" id="custom_excerpt" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500">{{ old('custom_excerpt', $post->custom_excerpt ?? '') }}</textarea>
@@ -85,6 +100,19 @@
                     </label>
                     @endforeach
                 </div>
+            </div>
+            @endif
+
+            @if(isset($galleries))
+            <div class="bg-white rounded-lg shadow p-6">
+                <label for="gallery_id" class="block text-sm font-medium text-gray-700 mb-1">Gallery</label>
+                <select name="gallery_id" id="gallery_id" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500 text-sm">
+                    <option value="">None</option>
+                    @foreach($galleries as $gallery)
+                    <option value="{{ $gallery->id }}" {{ old('gallery_id', $post->gallery_id ?? '') == $gallery->id ? 'selected' : '' }}>{{ $gallery->title }}</option>
+                    @endforeach
+                </select>
+                <p class="mt-1 text-xs text-gray-400">Displayed at the bottom of the article.</p>
             </div>
             @endif
 
