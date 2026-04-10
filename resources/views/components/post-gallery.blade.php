@@ -22,7 +22,7 @@
             <svg class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
         </button>
         @foreach($post->gallery->images as $index => $image)
-        <div x-show="lightbox === {{ $index }}" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95" class="flex flex-col items-center">
+        <div x-show="lightbox === {{ $index }}" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave.duration.0ms class="absolute flex flex-col items-center">
             <img src="{{ $image->image_path }}" alt="{{ $image->alt_text ?? '' }}" class="max-h-[80vh] max-w-[90vw] object-contain">
             @if($image->caption)
             <p class="mt-3 text-sm text-gray-300">{{ $image->caption }}</p>
