@@ -9,6 +9,19 @@
     lightbox: null,
     lightboxIndex: 0,
     images: {{ Js::from($images) }},
+    copied: false,
+    copyPath(text) {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        this.copied = true;
+        setTimeout(() => this.copied = false, 1500);
+    },
     prevImage() { this.lightboxIndex = (this.lightboxIndex - 1 + this.images.length) % this.images.length; this.lightbox = this.images[this.lightboxIndex].url; },
     nextImage() { this.lightboxIndex = (this.lightboxIndex + 1) % this.images.length; this.lightbox = this.images[this.lightboxIndex].url; }
 }">
