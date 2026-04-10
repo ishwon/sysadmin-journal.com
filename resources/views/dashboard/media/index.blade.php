@@ -117,7 +117,7 @@
 
     {{-- Images --}}
     @if($images->isNotEmpty())
-    <div>
+    <div class="mb-6">
         <h3 class="text-sm font-medium text-gray-500 uppercase mb-3">Photos ({{ $images->count() }})</h3>
         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
             @foreach($images as $index => $image)
