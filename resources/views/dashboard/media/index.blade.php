@@ -9,7 +9,7 @@
     lightbox: null,
     lightboxIndex: 0,
     images: {{ Js::from($images) }},
-    copied: false,
+    copiedUrl: null,
     copyPath(text) {
         const ta = document.createElement('textarea');
         ta.value = text;
@@ -19,8 +19,8 @@
         ta.select();
         document.execCommand('copy');
         document.body.removeChild(ta);
-        this.copied = true;
-        setTimeout(() => this.copied = false, 1500);
+        this.copiedUrl = text;
+        setTimeout(() => this.copiedUrl = null, 1500);
     },
     prevImage() { this.lightboxIndex = (this.lightboxIndex - 1 + this.images.length) % this.images.length; this.lightbox = this.images[this.lightboxIndex].url; },
     nextImage() { this.lightboxIndex = (this.lightboxIndex + 1) % this.images.length; this.lightbox = this.images[this.lightboxIndex].url; }
@@ -130,8 +130,9 @@
                     <p class="text-xs text-gray-400">{{ number_format($image['size'] / 1024, 0) }} KB</p>
                 </div>
                 <div class="absolute top-1 right-1 hidden group-hover:flex items-center space-x-1">
-                    <button @click.stop="navigator.clipboard.writeText('{{ $image['url'] }}')" class="p-1 rounded bg-white/80 text-gray-600 hover:bg-white" title="Copy path">
-                        <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                    <button @click.stop="copyPath('{{ $image['url'] }}')" class="p-1 rounded transition-all duration-200" :class="copiedUrl === '{{ $image['url'] }}' ? 'bg-emerald-500 text-white scale-110' : 'bg-white/80 text-gray-600 hover:bg-white'" title="Copy path">
+                        <svg x-show="copiedUrl !== '{{ $image['url'] }}'" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                        <svg x-show="copiedUrl === '{{ $image['url'] }}'" x-cloak class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
                     </button>
                     <form method="POST" action="{{ route('dashboard.media.delete-photo') }}" class="inline" onsubmit="return confirm('Delete this photo?')">
                         @csrf
@@ -164,8 +165,9 @@
                     <p class="text-xs text-gray-400">{{ number_format($pdf['size'] / 1024, 0) }} KB</p>
                 </div>
                 <div class="absolute top-1 right-1 hidden group-hover:flex items-center space-x-1">
-                    <button @click.stop="copyPath('{{ $pdf['url'] }}')" class="p-1 rounded bg-white/80 text-gray-600 hover:bg-white" title="Copy path">
-                        <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                    <button @click.stop="copyPath('{{ $pdf['url'] }}')" class="p-1 rounded transition-all duration-200" :class="copiedUrl === '{{ $pdf['url'] }}' ? 'bg-emerald-500 text-white scale-110' : 'bg-white/80 text-gray-600 hover:bg-white'" title="Copy path">
+                        <svg x-show="copiedUrl !== '{{ $pdf['url'] }}'" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                        <svg x-show="copiedUrl === '{{ $pdf['url'] }}'" x-cloak class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
                     </button>
                     <form method="POST" action="{{ route('dashboard.media.delete-photo') }}" class="inline" onsubmit="return confirm('Delete this file?')">
                         @csrf
