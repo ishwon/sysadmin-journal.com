@@ -19,6 +19,6 @@ class Tag extends Model
      */
     public function posts(): BelongsToMany
     {
-        return $this->belongsToMany(Post::class)->withPivot('sort_order')->orderByPivot('sort_order');
+        return $this->belongsToMany(Post::class)->withPivot('sort_order');
     }
 }
