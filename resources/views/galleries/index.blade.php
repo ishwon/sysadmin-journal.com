@@ -10,7 +10,7 @@
         <div class="mt-12 grid gap-8 pt-12 lg:grid-cols-3 lg:gap-x-5 lg:gap-y-12">
             @foreach($galleries as $gallery)
             <a href="/gallery/{{ $gallery->slug }}" class="group">
-                <div class="aspect-w-16 aspect-h-9 bg-gray-200 rounded-lg overflow-hidden">
+                <div class="aspect-w-16 aspect-h-9 bg-gray-200 overflow-hidden">
                     @if($gallery->cover_image)
                     <img src="{{ $gallery->cover_image }}" alt="{{ $gallery->title }}" class="object-cover group-hover:opacity-75 transition duration-300">
                     @else

@@ -16,7 +16,7 @@
     </div>
 
     {{-- Lightbox --}}
-    <div x-show="lightbox !== null" x-transition class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90" @click.self="lightbox = null" @keydown.escape.window="lightbox = null" @keydown.left.window="lightbox = Math.max(0, lightbox - 1)" @keydown.right.window="lightbox = Math.min({{ count($post->gallery->images) - 1 }}, lightbox + 1)" style="display: none;">
+    <div x-show="lightbox !== null" x-transition class="fixed inset-0 z-50 flex items-center justify-center bg-gray-800" @click.self="lightbox = null" @keydown.escape.window="lightbox = null" @keydown.left.window="lightbox = Math.max(0, lightbox - 1)" @keydown.right.window="lightbox = Math.min({{ count($post->gallery->images) - 1 }}, lightbox + 1)" style="display: none;">
         <button @click="lightbox = null" class="absolute top-4 right-4 text-white text-3xl">&times;</button>
         <button @click="lightbox = Math.max(0, lightbox - 1)" class="absolute left-4 text-white/70 hover:text-white transition p-2">
             <svg class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>

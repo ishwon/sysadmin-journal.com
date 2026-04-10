@@ -12,7 +12,7 @@
         <div class="mt-12 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" x-data="{ lightbox: null }">
             @foreach($gallery->images as $index => $image)
             <div class="cursor-pointer" @click="lightbox = {{ $index }}">
-                <img src="{{ $image->image_path }}" alt="{{ $image->alt_text ?? $image->caption }}" class="w-full h-48 object-cover rounded-lg hover:opacity-90 transition duration-300">
+                <img src="{{ $image->image_path }}" alt="{{ $image->alt_text ?? $image->caption }}" class="w-full h-48 object-cover hover:opacity-90 transition duration-300">
                 @if($image->caption)
                 <p class="mt-1 text-xs text-gray-500">{{ $image->caption }}</p>
                 @endif
@@ -20,7 +20,7 @@
             @endforeach
 
             {{-- Lightbox --}}
-            <div x-show="lightbox !== null" x-transition class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90" @click.self="lightbox = null" @keydown.escape.window="lightbox = null" @keydown.left.window="lightbox = Math.max(0, lightbox - 1)" @keydown.right.window="lightbox = Math.min({{ count($gallery->images) - 1 }}, lightbox + 1)" style="display: none;">
+            <div x-show="lightbox !== null" x-transition class="fixed inset-0 z-50 flex items-center justify-center bg-gray-800" @click.self="lightbox = null" @keydown.escape.window="lightbox = null" @keydown.left.window="lightbox = Math.max(0, lightbox - 1)" @keydown.right.window="lightbox = Math.min({{ count($gallery->images) - 1 }}, lightbox + 1)" style="display: none;">
                 <button @click="lightbox = null" class="absolute top-4 right-4 text-white text-3xl">&times;</button>
                 <button @click="lightbox = Math.max(0, lightbox - 1)" class="absolute left-4 text-white/70 hover:text-white transition p-2">
                     <svg class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
