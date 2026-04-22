@@ -133,6 +133,28 @@
             prose-strong:text-ink-50
             prose-code:bg-ink-800 prose-code:text-ink-100;
     }
+
+    /* Inline <code> gets the chip treatment. <code> inside <pre> must not. */
+    .prose-brand pre code,
+    .prose-brand pre code::before,
+    .prose-brand pre code::after {
+        background-color: transparent;
+        padding: 0;
+        border-radius: 0;
+        color: inherit;
+        font-weight: inherit;
+        font-size: inherit;
+    }
+
+    /* Polish <pre>: breathable padding, horizontal scroll, mono font, tight line-height. */
+    .prose-brand pre {
+        padding: 1.25rem 1.5rem;
+        overflow-x: auto;
+        font-family: var(--font-mono);
+        font-size: 0.9em;
+        line-height: 1.65;
+        tab-size: 2;
+    }
 }
 
 /* — Ghost/Koenig content cards (mobiledoc output) — */
