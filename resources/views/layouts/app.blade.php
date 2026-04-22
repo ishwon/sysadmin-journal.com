@@ -8,163 +8,119 @@
     <link rel="apple-touch-icon" href="/favicon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://use.typekit.net/ikg3vvf.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700;800&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap">
+    <script>
+        (function () {
+            try {
+                var s = localStorage.theme;
+                if (s === 'dark' || (!s && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                    document.documentElement.classList.add('dark');
+                }
+            } catch (e) {}
+        })();
+    </script>
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+    @vite(['resources/css/app.css'])
     @include('components.seo-meta')
-    <style>
-        figure { display: inline-block; }
-        figure img { vertical-align: top; }
-        figure figcaption { text-align: center; font-family: 'Courier New', Courier, monospace; font-size: 9px; }
-        code { background-color: #e5e7eb; display: inline-flex; padding: 0.125rem 0.75rem; border-radius: 0.25rem; }
-        blockquote { font-size: 21px; line-height: 110%; }
-        .lato { font-family: Lato, sans-serif; }
-        .kg-width-wide { max-width: 1040px; margin-left: auto; margin-right: auto; }
-        .kg-width-full { max-width: none; }
-        .kg-image-card { margin: 1.5em 0; }
-        .kg-image-card img { margin: 0 auto; }
-        .kg-embed-card { display: flex; justify-content: center; margin: 1.5em 0; }
-        .kg-embed-card iframe { width: 100%; }
-        .kg-gallery-container { display: flex; flex-direction: column; gap: 0.75em; margin: 1.5em 0; }
-        .kg-gallery-row { display: flex; gap: 0.75em; }
-        .kg-gallery-row img { flex: 1; height: auto; object-fit: cover; }
-        .kg-gallery-image img { width: 100%; height: auto; }
-        .kg-bookmark-card { border: 1px solid #e5e7eb; border-radius: 0.375rem; overflow: hidden; margin: 1.5em 0; }
-        .kg-bookmark-card a { display: flex; text-decoration: none; color: inherit; }
-        .kg-bookmark-content { padding: 1rem; flex: 1; }
-        .kg-bookmark-title { font-weight: 600; }
-        .kg-bookmark-description { margin-top: 0.5rem; font-size: 0.875rem; color: #6b7280; }
-        .kg-bookmark-metadata { margin-top: 0.5rem; font-size: 0.75rem; color: #9ca3af; }
-        .kg-bookmark-thumbnail { width: 200px; }
-        .kg-bookmark-thumbnail img { width: 100%; height: 100%; object-fit: cover; }
-    </style>
     @stack('styles')
 </head>
-<body class="lato">
-    <header class="bg-gray-900">
-        <nav class="max-w-6xl mx-auto px-6 sm:px-6 lg:px-0" aria-label="Top">
+<body x-data="{
+    dark: document.documentElement.classList.contains('dark'),
+    toggleTheme() {
+        this.dark = !this.dark;
+        document.documentElement.classList.toggle('dark', this.dark);
+        try { localStorage.theme = this.dark ? 'dark' : 'light'; } catch (e) {}
+    }
+}" class="font-sans bg-white text-ink-800 dark:bg-ink-950 dark:text-ink-100 antialiased">
+    <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:rounded-md focus:bg-white focus:px-4 focus:py-2 focus:text-ink-900 focus:shadow-lg">Skip to content</a>
+
+    <header class="bg-ink-900 text-white sticky top-0 z-40 border-b border-ink-800">
+        <nav class="max-w-6xl mx-auto px-6 lg:px-0" aria-label="Top">
             <div class="flex flex-col" x-data="{ open: false }">
-                <div class="w-full py-6 flex items-center justify-between lg:border-none">
+                <div class="w-full py-5 flex items-center justify-between">
                     <div class="flex items-center">
-                        <a href="/">
-                            <span class="text-xl font-extrabold text-white hover:text-indigo-50">SysAdmin Journal</span>
-                        </a>
-                        <div class="hidden ml-10 space-x-8 lg:block">
-                            <a href="/about-me" class="text-base font-medium text-white hover:text-indigo-50">About</a>
-                            <a href="/tag/conference" class="text-base font-medium text-white hover:text-indigo-50">Conferences</a>
-                            <a href="/tag/linux" class="text-base font-medium text-white hover:text-indigo-50">Linux</a>
-                            <a href="/sanskrit" class="text-base font-medium text-white hover:text-indigo-50">Sanskrit</a>
+                        <a href="/" class="text-xl font-extrabold text-white hover:text-accent-400 transition-colors">SysAdmin Journal</a>
+                        <div class="hidden ml-10 space-x-6 lg:block">
+                            <a href="/about-me" class="text-sm font-medium text-ink-200 hover:text-accent-400 transition-colors">About</a>
+                            <a href="/tag/conference" class="text-sm font-medium text-ink-200 hover:text-accent-400 transition-colors">Conferences</a>
+                            <a href="/tag/linux" class="text-sm font-medium text-ink-200 hover:text-accent-400 transition-colors">Linux</a>
+                            <a href="/sanskrit" class="text-sm font-medium text-ink-200 hover:text-accent-400 transition-colors">Sanskrit</a>
                         </div>
                     </div>
-                    <div class="ml-10 space-x-2 hidden lg:block">
-                        <a href="/opensuse" class="inline-block bg-emerald-500 py-2 px-4 border border-transparent rounded-md text-base font-medium text-white hover:bg-opacity-75 transition-all ease-in-out duration-700">
-                            <div class="flex flex-row space-x-2 mx-auto">
-                                <span class="pt-0.5">
-                                    <svg class="h-5 w-5 object-center" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                        <path d="M10.724 0a12 12 0 0 0-9.448 4.623c1.464.391 2.5.727 2.81.832.005-.19.037-1.893.037-1.893s.004-.04.025-.06c.026-.026.065-.018.065-.018.385.056 8.602 1.274 12.066 3.292.427.25.638.517.902.786.958.99 2.223 5.108 2.359 5.957.005.033-.036.07-.054.083a5.177 5.177 0 0 1-.313.228c-.82.55-2.708 1.872-5.13 1.656-2.176-.193-5.018-1.44-8.445-3.699.336.79.668 1.58 1 2.371.497.258 5.287 2.7 7.651 2.651 1.904-.04 3.941-.968 4.756-1.458 0 0 .179-.108.257-.048.085.066.061.167.041.27-.05.234-.164.66-.242.863l-.065.165c-.093.25-.183.482-.356.625-.48.436-1.246.784-2.446 1.305-1.855.812-4.865 1.328-7.66 1.31-1.001-.022-1.968-.133-2.817-.232-1.743-.197-3.161-.357-4.026.269A12 12 0 0 0 10.724 24a12 12 0 0 0 12-12 12 12 0 0 0-12-12zM13.4 6.963a3.503 3.503 0 0 0-2.521.942 3.498 3.498 0 0 0-1.114 2.449 3.528 3.528 0 0 0 3.39 3.64 3.48 3.48 0 0 0 2.524-.946 3.504 3.504 0 0 0 1.114-2.446 3.527 3.527 0 0 0-3.393-3.64zm-.03 1.035a2.458 2.458 0 0 1 2.368 2.539 2.43 2.43 0 0 1-.774 1.706 2.456 2.456 0 0 1-1.762.659 2.461 2.461 0 0 1-2.364-2.542c.02-.655.3-1.26.777-1.707a2.419 2.419 0 0 1 1.756-.655zm.402 1.23c-.602 0-1.087.325-1.087.727 0 .4.485.725 1.087.725.6 0 1.088-.326 1.088-.725 0-.402-.487-.726-1.088-.726Z"/>
-                                    </svg>
-                                </span>
-                                <span>Get openSUSE</span>
-                            </div>
+                    <div class="hidden lg:flex items-center gap-2">
+                        <a href="/opensuse" class="inline-flex items-center gap-2 rounded-md bg-accent-500 px-4 py-2 text-sm font-medium text-white hover:bg-accent-600 transition-colors duration-[var(--duration-quick)]">
+                            <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M10.724 0a12 12 0 0 0-9.448 4.623c1.464.391 2.5.727 2.81.832.005-.19.037-1.893.037-1.893s.004-.04.025-.06c.026-.026.065-.018.065-.018.385.056 8.602 1.274 12.066 3.292.427.25.638.517.902.786.958.99 2.223 5.108 2.359 5.957.005.033-.036.07-.054.083a5.177 5.177 0 0 1-.313.228c-.82.55-2.708 1.872-5.13 1.656-2.176-.193-5.018-1.44-8.445-3.699.336.79.668 1.58 1 2.371.497.258 5.287 2.7 7.651 2.651 1.904-.04 3.941-.968 4.756-1.458 0 0 .179-.108.257-.048.085.066.061.167.041.27-.05.234-.164.66-.242.863l-.065.165c-.093.25-.183.482-.356.625-.48.436-1.246.784-2.446 1.305-1.855.812-4.865 1.328-7.66 1.31-1.001-.022-1.968-.133-2.817-.232-1.743-.197-3.161-.357-4.026.269A12 12 0 0 0 10.724 24a12 12 0 0 0 12-12 12 12 0 0 0-12-12zM13.4 6.963a3.503 3.503 0 0 0-2.521.942 3.498 3.498 0 0 0-1.114 2.449 3.528 3.528 0 0 0 3.39 3.64 3.48 3.48 0 0 0 2.524-.946 3.504 3.504 0 0 0 1.114-2.446 3.527 3.527 0 0 0-3.393-3.64zm-.03 1.035a2.458 2.458 0 0 1 2.368 2.539 2.43 2.43 0 0 1-.774 1.706 2.456 2.456 0 0 1-1.762.659 2.461 2.461 0 0 1-2.364-2.542c.02-.655.3-1.26.777-1.707a2.419 2.419 0 0 1 1.756-.655zm.402 1.23c-.602 0-1.087.325-1.087.727 0 .4.485.725 1.087.725.6 0 1.088-.326 1.088-.725 0-.402-.487-.726-1.088-.726Z" />
+                            </svg>
+                            <span>Get openSUSE</span>
                         </a>
-                        <button @click="$dispatch('open-search')" class="inline-block bg-gray-50 py-2 px-4 border border-transparent rounded-md text-base font-medium text-gray-800 hover:bg-opacity-75 transition-all ease-in-out duration-700 cursor-pointer">
-                            <div class="flex flex-row space-x-2 mx-auto">
-                                <span class="pt-0.5">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 object-center" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                    </svg>
-                                </span>
-                                <span>Search</span>
-                            </div>
+                        <button @click="$dispatch('open-search')" type="button" class="inline-flex h-10 items-center gap-2 rounded-md bg-white/10 hover:bg-white/20 px-3 text-sm font-medium text-white transition-colors duration-[var(--duration-quick)]" aria-label="Search">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                            <span>Search</span>
                         </button>
+                        <x-ui.theme-toggle tone="dark" />
                     </div>
-                    <div class="ml-10 space-x-4 lg:hidden">
-                        <button class="inline-block py-2 px-2 border border-2 border-emerald-500 rounded-md text-base font-medium text-white hover:bg-opacity-75" @click="open = ! open">
-                            <div class="flex flex-row space-x-2 mx-auto">
-                                <span class="pt-0.5">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" :class="{ 'hidden' : open }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                                    </svg>
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" :class="{ 'hidden' : !open }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                </span>
-                            </div>
+                    <div class="flex items-center gap-2 lg:hidden">
+                        <x-ui.theme-toggle tone="dark" />
+                        <button type="button" @click="$dispatch('open-search')" class="inline-flex h-10 w-10 items-center justify-center rounded-md text-ink-200 hover:bg-white/10 transition-colors" aria-label="Search">
+                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                        </button>
+                        <button type="button" @click="open = !open" class="inline-flex h-10 w-10 items-center justify-center rounded-md border-2 border-accent-500 text-white hover:bg-white/10 transition-colors" aria-label="Toggle menu">
+                            <svg x-show="!open" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+                            <svg x-show="open" x-cloak class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                         </button>
                     </div>
                 </div>
 
-                <div class="relative overflow-hidden transition-all max-h-0 duration-700" x-ref="menu" x-bind:style="open == 1 ? 'max-height: ' + $refs.menu.scrollHeight + 'px' : ''">
-                    <div class="flex flex-col mx-auto text-white">
-                        <div class="pt-4 pb-2">
-                            <a href="/about-me" class="text-base font-medium text-white hover:text-indigo-50">About</a>
-                        </div>
-                        <div class="py-2">
-                            <a href="/tag/conference" class="text-base font-medium text-white hover:text-indigo-50">Conferences</a>
-                        </div>
-                        <div class="py-2">
-                            <a href="/tag/linux" class="text-base font-medium text-white hover:text-indigo-50">Linux</a>
-                        </div>
-                        <div class="py-2">
-                            <a href="/sanskrit" class="text-base font-medium text-white hover:text-indigo-50">Sanskrit</a>
-                        </div>
-                        <div class="flex flex-col space-y-2 md:flex-row md:space-x-2 md:space-y-0 pt-2 pb-6">
-                            <a href="/opensuse" class="inline-block bg-emerald-500 py-2 px-4 border border-transparent rounded-md text-base font-medium text-white hover:bg-opacity-75">
-                                <div class="flex flex-row space-x-2 mx-auto">
-                                    <span class="pt-0.5">
-                                        <svg class="h-5 w-5 object-center" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                            <path d="M10.724 0a12 12 0 0 0-9.448 4.623c1.464.391 2.5.727 2.81.832.005-.19.037-1.893.037-1.893s.004-.04.025-.06c.026-.026.065-.018.065-.018.385.056 8.602 1.274 12.066 3.292.427.25.638.517.902.786.958.99 2.223 5.108 2.359 5.957.005.033-.036.07-.054.083a5.177 5.177 0 0 1-.313.228c-.82.55-2.708 1.872-5.13 1.656-2.176-.193-5.018-1.44-8.445-3.699.336.79.668 1.58 1 2.371.497.258 5.287 2.7 7.651 2.651 1.904-.04 3.941-.968 4.756-1.458 0 0 .179-.108.257-.048.085.066.061.167.041.27-.05.234-.164.66-.242.863l-.065.165c-.093.25-.183.482-.356.625-.48.436-1.246.784-2.446 1.305-1.855.812-4.865 1.328-7.66 1.31-1.001-.022-1.968-.133-2.817-.232-1.743-.197-3.161-.357-4.026.269A12 12 0 0 0 10.724 24a12 12 0 0 0 12-12 12 12 0 0 0-12-12zM13.4 6.963a3.503 3.503 0 0 0-2.521.942 3.498 3.498 0 0 0-1.114 2.449 3.528 3.528 0 0 0 3.39 3.64 3.48 3.48 0 0 0 2.524-.946 3.504 3.504 0 0 0 1.114-2.446 3.527 3.527 0 0 0-3.393-3.64zm-.03 1.035a2.458 2.458 0 0 1 2.368 2.539 2.43 2.43 0 0 1-.774 1.706 2.456 2.456 0 0 1-1.762.659 2.461 2.461 0 0 1-2.364-2.542c.02-.655.3-1.26.777-1.707a2.419 2.419 0 0 1 1.756-.655zm.402 1.23c-.602 0-1.087.325-1.087.727 0 .4.485.725 1.087.725.6 0 1.088-.326 1.088-.725 0-.402-.487-.726-1.088-.726Z"/>
-                                        </svg>
-                                    </span>
-                                    <span>Get openSUSE</span>
-                                </div>
-                            </a>
-                            <button @click="$dispatch('open-search')" class="inline-block bg-gray-50 py-2 px-4 border border-transparent rounded-md text-base font-medium text-gray-800 hover:bg-opacity-75 cursor-pointer">
-                                <div class="flex flex-row space-x-2 mx-auto">
-                                    <span class="pt-0.5">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 object-center" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                        </svg>
-                                    </span>
-                                    <span>Search</span>
-                                </div>
-                            </button>
-                        </div>
+                <div class="lg:hidden relative overflow-hidden transition-all max-h-0 duration-[var(--duration-slow)]" x-ref="menu" x-bind:style="open ? 'max-height: ' + $refs.menu.scrollHeight + 'px' : ''">
+                    <div class="flex flex-col pb-4 gap-1 text-ink-200">
+                        <a href="/about-me" class="py-2 text-base font-medium hover:text-accent-400 transition-colors">About</a>
+                        <a href="/tag/conference" class="py-2 text-base font-medium hover:text-accent-400 transition-colors">Conferences</a>
+                        <a href="/tag/linux" class="py-2 text-base font-medium hover:text-accent-400 transition-colors">Linux</a>
+                        <a href="/sanskrit" class="py-2 text-base font-medium hover:text-accent-400 transition-colors">Sanskrit</a>
+                        <a href="/opensuse" class="mt-2 inline-flex items-center justify-center gap-2 rounded-md bg-accent-500 px-4 py-2 text-sm font-medium text-white hover:bg-accent-600 transition-colors">
+                            <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M10.724 0a12 12 0 0 0-9.448 4.623c1.464.391 2.5.727 2.81.832.005-.19.037-1.893.037-1.893s.004-.04.025-.06c.026-.026.065-.018.065-.018.385.056 8.602 1.274 12.066 3.292.427.25.638.517.902.786.958.99 2.223 5.108 2.359 5.957.005.033-.036.07-.054.083a5.177 5.177 0 0 1-.313.228c-.82.55-2.708 1.872-5.13 1.656-2.176-.193-5.018-1.44-8.445-3.699.336.79.668 1.58 1 2.371.497.258 5.287 2.7 7.651 2.651 1.904-.04 3.941-.968 4.756-1.458 0 0 .179-.108.257-.048.085.066.061.167.041.27-.05.234-.164.66-.242.863l-.065.165c-.093.25-.183.482-.356.625-.48.436-1.246.784-2.446 1.305-1.855.812-4.865 1.328-7.66 1.31-1.001-.022-1.968-.133-2.817-.232-1.743-.197-3.161-.357-4.026.269A12 12 0 0 0 10.724 24a12 12 0 0 0 12-12 12 12 0 0 0-12-12zM13.4 6.963a3.503 3.503 0 0 0-2.521.942 3.498 3.498 0 0 0-1.114 2.449 3.528 3.528 0 0 0 3.39 3.64 3.48 3.48 0 0 0 2.524-.946 3.504 3.504 0 0 0 1.114-2.446 3.527 3.527 0 0 0-3.393-3.64zm-.03 1.035a2.458 2.458 0 0 1 2.368 2.539 2.43 2.43 0 0 1-.774 1.706 2.456 2.456 0 0 1-1.762.659 2.461 2.461 0 0 1-2.364-2.542c.02-.655.3-1.26.777-1.707a2.419 2.419 0 0 1 1.756-.655zm.402 1.23c-.602 0-1.087.325-1.087.727 0 .4.485.725 1.087.725.6 0 1.088-.326 1.088-.725 0-.402-.487-.726-1.088-.726Z" /></svg>
+                            <span>Get openSUSE</span>
+                        </a>
                     </div>
                 </div>
             </div>
         </nav>
     </header>
 
-    @yield('content')
+    <main id="main">
+        @yield('content')
+    </main>
 
-    <footer class="bg-gray-900">
+    <footer class="bg-ink-900 text-ink-200 border-t border-ink-800">
         <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 md:flex md:items-center md:justify-between lg:px-0">
             <div class="flex justify-center space-x-6 md:order-2">
-                <a href="https://www.facebook.com/ish.sookun" class="text-gray-100 hover:text-green-500 transition ease-in-out duration-300">
+                <a href="https://www.facebook.com/ish.sookun" class="text-ink-200 hover:text-accent-500 transition-colors duration-[var(--duration-base)]">
                     <span class="sr-only">Facebook</span>
                     <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" clip-rule="evenodd" /></svg>
                 </a>
-                <a href="https://instagram.com/ish.sookun" class="text-gray-100 hover:text-green-500 transition ease-in-out duration-300">
+                <a href="https://instagram.com/ish.sookun" class="text-ink-200 hover:text-accent-500 transition-colors duration-[var(--duration-base)]">
                     <span class="sr-only">Instagram</span>
                     <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M12 0C8.74 0 8.333.015 7.053.072 5.775.132 4.905.333 4.14.63c-.789.306-1.459.717-2.126 1.384S.935 3.35.63 4.14C.333 4.905.131 5.775.072 7.053.012 8.333 0 8.74 0 12s.015 3.667.072 4.947c.06 1.277.261 2.148.558 2.913.306.788.717 1.459 1.384 2.126.667.666 1.336 1.079 2.126 1.384.766.296 1.636.499 2.913.558C8.333 23.988 8.74 24 12 24s3.667-.015 4.947-.072c1.277-.06 2.148-.262 2.913-.558.788-.306 1.459-.718 2.126-1.384.666-.667 1.079-1.335 1.384-2.126.296-.765.499-1.636.558-2.913.06-1.28.072-1.687.072-4.947s-.015-3.667-.072-4.947c-.06-1.277-.262-2.149-.558-2.913-.306-.789-.718-1.459-1.384-2.126C21.319 1.347 20.651.935 19.86.63c-.765-.297-1.636-.499-2.913-.558C15.667.012 15.26 0 12 0zm0 2.16c3.203 0 3.585.016 4.85.071 1.17.055 1.805.249 2.227.415.562.217.96.477 1.382.896.419.42.679.819.896 1.381.164.422.36 1.057.413 2.227.057 1.266.07 1.646.07 4.85s-.015 3.585-.074 4.85c-.061 1.17-.256 1.805-.421 2.227-.224.562-.479.96-.899 1.382-.419.419-.824.679-1.38.896-.42.164-1.065.36-2.235.413-1.274.057-1.649.07-4.859.07-3.211 0-3.586-.015-4.859-.074-1.171-.061-1.816-.256-2.236-.421-.569-.224-.96-.479-1.379-.899-.421-.419-.69-.824-.9-1.38-.165-.42-.359-1.065-.42-2.235-.045-1.26-.061-1.649-.061-4.844 0-3.196.016-3.586.061-4.861.061-1.17.255-1.814.42-2.234.21-.57.479-.96.9-1.381.419-.419.81-.689 1.379-.898.42-.166 1.051-.361 2.221-.421 1.275-.045 1.65-.06 4.859-.06l.045.03zm0 3.678c-3.405 0-6.162 2.76-6.162 6.162 0 3.405 2.76 6.162 6.162 6.162 3.405 0 6.162-2.76 6.162-6.162 0-3.405-2.76-6.162-6.162-6.162zM12 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm7.846-10.405c0 .795-.646 1.44-1.44 1.44-.795 0-1.44-.646-1.44-1.44 0-.794.646-1.439 1.44-1.439.793-.001 1.44.645 1.44 1.439z" clip-rule="evenodd" /></svg>
                 </a>
-                <a href="https://twitter.com/IshSookun" class="text-gray-100 hover:text-green-500 transition ease-in-out duration-300">
+                <a href="https://twitter.com/IshSookun" class="text-ink-200 hover:text-accent-500 transition-colors duration-[var(--duration-base)]">
                     <span class="sr-only">Twitter</span>
                     <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z" clip-rule="evenodd" /></svg>
                 </a>
-                <a href="https://github.com/ish-sookun" class="text-gray-100 hover:text-green-500 transition ease-in-out duration-300">
+                <a href="https://github.com/ish-sookun" class="text-ink-200 hover:text-accent-500 transition-colors duration-[var(--duration-base)]">
                     <span class="sr-only">GitHub</span>
                     <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" clip-rule="evenodd" /></svg>
                 </a>
-                <a href="https://mu.linkedin.com/in/ishsookun" class="text-gray-100 hover:text-green-500 transition ease-in-out duration-300">
+                <a href="https://mu.linkedin.com/in/ishsookun" class="text-ink-200 hover:text-accent-500 transition-colors duration-[var(--duration-base)]">
                     <span class="sr-only">LinkedIn</span>
                     <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" clip-rule="evenodd" /></svg>
                 </a>
             </div>
             <div class="mt-8 md:mt-0 md:order-1">
-                <p class="text-center text-base text-gray-100">
-                    &copy; {{ date('Y') }}, SYSADMIN JOURNAL. All rights reserved.
+                <p class="text-center text-sm text-ink-300">
+                    &copy; {{ date('Y') }}, SysAdmin Journal. All rights reserved.
                 </p>
             </div>
         </div>

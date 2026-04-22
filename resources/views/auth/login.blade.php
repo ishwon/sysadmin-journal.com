@@ -3,39 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - SysAdmin Journal</title>
-    <link rel="stylesheet" href="https://use.typekit.net/ikg3vvf.css">
+    <title>Sign in — SysAdmin Journal</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+    <script>
+        (function () {
+            try {
+                var s = localStorage.theme;
+                if (s === 'dark' || (!s && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                    document.documentElement.classList.add('dark');
+                }
+            } catch (e) {}
+        })();
+    </script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     @vite(['resources/css/app.css'])
 </head>
-<body class="font-sans bg-gray-900 min-h-screen flex items-center justify-center">
+<body class="font-sans bg-ink-900 text-ink-100 min-h-screen flex items-center justify-center antialiased">
     <div class="max-w-md w-full mx-4">
         <div class="text-center mb-8">
-            <h1 class="text-2xl font-extrabold text-white">SysAdmin Journal</h1>
-            <p class="mt-2 text-gray-400">Sign in to your dashboard</p>
-        </div>
-        <div class="bg-white rounded-lg shadow-xl p-8">
-            @if($errors->any())
-            <div class="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded text-sm">
-                {{ $errors->first() }}
+            <div class="inline-flex items-center gap-2 text-white">
+                <svg class="h-6 w-6 text-accent-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path d="M3 4a2 2 0 012-2h10a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V4zm3 2h8v2H6V6zm0 4h8v2H6v-2zm0 4h5v2H6v-2z" />
+                </svg>
+                <h1 class="text-2xl font-extrabold">SysAdmin Journal</h1>
             </div>
+            <p class="mt-2 text-sm text-ink-300">Sign in to your dashboard</p>
+        </div>
+
+        <div class="bg-white dark:bg-ink-800 rounded-lg shadow-xl p-8 border border-ink-700/50">
+            @if ($errors->any())
+                <div class="mb-4">
+                    <x-ui.alert tone="danger">{{ $errors->first() }}</x-ui.alert>
+                </div>
             @endif
-            <form method="POST" action="{{ route('login') }}">
+
+            <form method="POST" action="{{ route('login') }}" class="space-y-4">
                 @csrf
-                <div class="mb-4">
-                    <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                    <input type="email" name="email" id="email" value="{{ old('email') }}" required autofocus class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+                <x-ui.input name="email" type="email" label="Email" :value="old('email')" required autofocus />
+                <x-ui.input name="password" type="password" label="Password" required />
+                <div class="pt-1">
+                    <x-ui.checkbox name="remember" label="Remember me" />
                 </div>
-                <div class="mb-4">
-                    <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                    <input type="password" name="password" id="password" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
-                </div>
-                <div class="mb-6 flex items-center">
-                    <input type="checkbox" name="remember" id="remember" class="h-4 w-4 text-emerald-600 border-gray-300 rounded">
-                    <label for="remember" class="ml-2 text-sm text-gray-600">Remember me</label>
-                </div>
-                <button type="submit" class="w-full bg-emerald-500 text-white py-2 px-4 rounded-md font-medium hover:bg-emerald-600 transition duration-300">Sign in</button>
+                <x-ui.button type="submit" variant="primary" class="w-full">Sign in</x-ui.button>
             </form>
         </div>
+
+        <p class="mt-6 text-center text-xs text-ink-400">
+            <a href="/" class="hover:text-accent-400 transition-colors">&larr; Back to site</a>
+        </p>
     </div>
 </body>
 </html>
