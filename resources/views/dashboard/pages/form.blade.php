@@ -1,14 +1,14 @@
 <div x-data="{
-    title: '{{ old('title', $page->title ?? '') }}',
-    slug: '{{ old('slug', $page->slug ?? '') }}',
-    slugManual: {{ old('slug', $page->slug ?? '') ? 'true' : 'false' }},
-    contentFormat: '{{ old('content_format', ($page->markdown ?? null) ? 'markdown' : 'html') }}',
+    title: {{ Js::from(old('title', $page->title ?? '')) }},
+    slug: {{ Js::from(old('slug', $page->slug ?? '')) }},
+    slugManual: {{ Js::from((bool) old('slug', $page->slug ?? '')) }},
+    contentFormat: {{ Js::from(old('content_format', ($page->markdown ?? null) ? 'markdown' : 'html')) }},
     async generateSlug() {
         if (this.slugManual && this.slug) return;
-        const response = await fetch('{{ route('dashboard.api.slug-check') }}', {
+        const response = await fetch({{ Js::from(route('dashboard.api.slug-check')) }}, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content },
-            body: JSON.stringify({ title: this.title, exclude_id: '{{ $page->id ?? '' }}' })
+            body: JSON.stringify({ title: this.title, exclude_id: {{ Js::from($page->id ?? '') }} })
         });
         const data = await response.json();
         this.slug = data.slug;
@@ -16,69 +16,43 @@
 }">
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div class="lg:col-span-2 space-y-6">
-            <div class="bg-white rounded-lg shadow p-6">
-                <div class="mb-4">
-                    <label for="title" class="block text-sm font-medium text-gray-700 mb-1">Title</label>
-                    <input type="text" name="title" id="title" x-model="title" @input.debounce.500ms="generateSlug()" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500" required>
-                </div>
-                <div class="mb-4">
-                    <label for="slug" class="block text-sm font-medium text-gray-700 mb-1">Slug</label>
-                    <input type="text" name="slug" id="slug" x-model="slug" @input="slugManual = true" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500 font-mono text-sm" required>
-                </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Content Format</label>
-                    <div class="flex space-x-4">
-                        <label class="inline-flex items-center">
-                            <input type="radio" name="content_format" value="html" x-model="contentFormat" class="text-emerald-500">
-                            <span class="ml-2 text-sm">HTML</span>
-                        </label>
-                        <label class="inline-flex items-center">
-                            <input type="radio" name="content_format" value="markdown" x-model="contentFormat" class="text-emerald-500">
-                            <span class="ml-2 text-sm">Markdown</span>
-                        </label>
+            <x-ui.card>
+                <div class="space-y-4">
+                    <x-ui.input name="title" label="Title" x-model="title" @input.debounce.500ms="generateSlug()" required />
+                    <x-ui.input name="slug" label="Slug" x-model="slug" @input="slugManual = true" class="font-mono" required />
+                    <div>
+                        <p class="block text-sm font-medium text-ink-800 dark:text-ink-100 mb-1.5">Content format</p>
+                        <div class="flex gap-4">
+                            <x-ui.radio name="content_format" value="html" label="HTML" x-model="contentFormat" />
+                            <x-ui.radio name="content_format" value="markdown" label="Markdown" x-model="contentFormat" />
+                        </div>
                     </div>
+                    <x-ui.textarea name="content" label="Content" rows="20" mono>{{ old('content', ($page->markdown ?? null) ?: ($page->html ?? '')) }}</x-ui.textarea>
+                    <x-ui.textarea name="custom_excerpt" label="Custom excerpt" rows="3">{{ old('custom_excerpt', $page->custom_excerpt ?? '') }}</x-ui.textarea>
                 </div>
-                <div class="mb-4">
-                    <label for="content" class="block text-sm font-medium text-gray-700 mb-1">Content</label>
-                    <textarea name="content" id="content" rows="20" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500 font-mono text-sm">{{ old('content', ($page->markdown ?? null) ?: ($page->html ?? '')) }}</textarea>
-                </div>
-                <div>
-                    <label for="custom_excerpt" class="block text-sm font-medium text-gray-700 mb-1">Custom Excerpt</label>
-                    <textarea name="custom_excerpt" id="custom_excerpt" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500">{{ old('custom_excerpt', $page->custom_excerpt ?? '') }}</textarea>
-                </div>
-            </div>
+            </x-ui.card>
         </div>
 
         <div class="space-y-6">
-            <div class="bg-white rounded-lg shadow p-6">
-                <div class="mb-4">
-                    <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                    <select name="status" id="status" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500">
-                        <option value="draft" {{ old('status', $page->status ?? 'draft') === 'draft' ? 'selected' : '' }}>Draft</option>
-                        <option value="published" {{ old('status', $page->status ?? '') === 'published' ? 'selected' : '' }}>Published</option>
-                    </select>
+            <x-ui.card title="Publish">
+                <div class="space-y-4">
+                    <x-ui.select name="status" label="Status"
+                        :options="['draft' => 'Draft', 'published' => 'Published']"
+                        :selected="old('status', $page->status ?? 'draft')" />
+                    <x-ui.input name="feature_image" label="Feature image URL" :value="old('feature_image', $page->feature_image ?? '')" />
                 </div>
-                <div>
-                    <label for="feature_image" class="block text-sm font-medium text-gray-700 mb-1">Feature Image URL</label>
-                    <input type="text" name="feature_image" id="feature_image" value="{{ old('feature_image', $page->feature_image ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500 text-sm">
-                </div>
-            </div>
+            </x-ui.card>
 
-            <div class="bg-white rounded-lg shadow p-6">
-                <h3 class="text-sm font-medium text-gray-700 mb-3">SEO</h3>
+            <x-ui.card title="SEO">
                 <div class="space-y-3">
-                    <div>
-                        <label for="meta_title" class="block text-xs text-gray-500 mb-1">Meta Title</label>
-                        <input type="text" name="meta_title" id="meta_title" value="{{ old('meta_title', $page->meta_title ?? '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500 text-sm">
-                    </div>
-                    <div>
-                        <label for="meta_description" class="block text-xs text-gray-500 mb-1">Meta Description</label>
-                        <textarea name="meta_description" id="meta_description" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500 text-sm">{{ old('meta_description', $page->meta_description ?? '') }}</textarea>
-                    </div>
+                    <x-ui.input name="meta_title" label="Meta title" :value="old('meta_title', $page->meta_title ?? '')" />
+                    <x-ui.textarea name="meta_description" label="Meta description" rows="2">{{ old('meta_description', $page->meta_description ?? '') }}</x-ui.textarea>
                 </div>
-            </div>
+            </x-ui.card>
 
-            <button type="submit" class="w-full bg-emerald-500 text-white py-2 px-4 rounded-md font-medium hover:bg-emerald-600 transition">Save</button>
+            <x-ui.button type="submit" variant="primary" class="w-full">
+                {{ isset($page) && $page->exists ? 'Save changes' : 'Create page' }}
+            </x-ui.button>
         </div>
     </div>
 </div>
