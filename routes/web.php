@@ -42,6 +42,7 @@ Route::prefix('dashboard')->middleware('auth')->name('dashboard.')->group(functi
 
 // Public
 Route::get('/', [PostController::class, 'index'])->name('home');
+Route::view('/brand-system', 'brand-system')->name('brand-system');
 Route::get('/search', [SearchController::class, 'search'])->name('search');
 Route::get('/gallery', [GalleryController::class, 'index'])->name('galleries.index');
 Route::get('/gallery/{slug}', [GalleryController::class, 'show'])->name('galleries.show');

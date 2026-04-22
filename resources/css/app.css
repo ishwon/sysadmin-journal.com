@@ -1,11 +1,285 @@
 @import 'tailwindcss';
+@plugin '@tailwindcss/typography';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 @source '../**/*.blade.php';
 @source '../**/*.js';
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
+    /* — Typography — */
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-serif: 'Lora', ui-serif, Georgia, 'Times New Roman', serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+    /* — Ink (primary #27374D) — */
+    --color-ink-50: #f4f6f9;
+    --color-ink-100: #e4e9f0;
+    --color-ink-200: #c5cfdc;
+    --color-ink-300: #9aabc0;
+    --color-ink-400: #6b7f9a;
+    --color-ink-500: #4a5f7d;
+    --color-ink-600: #364a66;
+    --color-ink-700: #2d3f56;
+    --color-ink-800: #27374d;
+    --color-ink-900: #1c2838;
+    --color-ink-950: #121a25;
+
+    /* — Accent (emerald #10b981) — */
+    --color-accent-50: #ecfdf5;
+    --color-accent-100: #d1fae5;
+    --color-accent-200: #a7f3d0;
+    --color-accent-300: #6ee7b7;
+    --color-accent-400: #34d399;
+    --color-accent-500: #10b981;
+    --color-accent-600: #059669;
+    --color-accent-700: #047857;
+    --color-accent-800: #065f46;
+    --color-accent-900: #064e3b;
+
+    /* — Surface (#DDE6ED) — */
+    --color-surface-50: #f8fafc;
+    --color-surface-100: #eef3f7;
+    --color-surface-200: #dde6ed;
+    --color-surface-300: #c2d0dc;
+    --color-surface-400: #97aaba;
+    --color-surface-500: #6e8294;
+
+    /* — Danger (#EA5455) — */
+    --color-danger-50: #fef2f2;
+    --color-danger-100: #fee2e2;
+    --color-danger-200: #fecaca;
+    --color-danger-300: #fca5a5;
+    --color-danger-400: #f77676;
+    --color-danger-500: #ea5455;
+    --color-danger-600: #d63a3b;
+    --color-danger-700: #b12929;
+    --color-danger-800: #8f2020;
+    --color-danger-900: #741c1c;
+
+    /* — Warning (#F66B0E) — */
+    --color-warning-50: #fff7ed;
+    --color-warning-100: #ffedd5;
+    --color-warning-200: #fed7aa;
+    --color-warning-300: #fdba74;
+    --color-warning-400: #fb923c;
+    --color-warning-500: #f66b0e;
+    --color-warning-600: #d9560b;
+    --color-warning-700: #b2440a;
+    --color-warning-800: #8a350a;
+    --color-warning-900: #6b2808;
+
+    /* — Elevation (ink-tinted, one-direction) — */
+    --shadow-xs: 0 1px 2px rgb(39 55 77 / 0.05);
+    --shadow-sm: 0 1px 3px rgb(39 55 77 / 0.08), 0 1px 2px rgb(39 55 77 / 0.04);
+    --shadow-md: 0 4px 8px rgb(39 55 77 / 0.08), 0 2px 4px rgb(39 55 77 / 0.04);
+    --shadow-lg: 0 12px 24px rgb(39 55 77 / 0.10), 0 4px 8px rgb(39 55 77 / 0.06);
+    --shadow-xl: 0 24px 48px rgb(39 55 77 / 0.12), 0 8px 16px rgb(39 55 77 / 0.06);
+    --shadow-focus: 0 0 0 3px rgb(16 185 129 / 0.35);
+
+    /* — Radius — */
+    --radius-xs: 0.125rem;
+    --radius-sm: 0.25rem;
+    --radius-md: 0.5rem;
+    --radius-lg: 0.75rem;
+    --radius-xl: 1rem;
+
+    /* — Motion — */
+    --ease-brand: cubic-bezier(0.22, 1, 0.36, 1);
+    --duration-quick: 150ms;
+    --duration-base: 250ms;
+    --duration-slow: 450ms;
+}
+
+/* — Global hairline polish — */
+@layer base {
+    html {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+
+    [x-cloak] {
+        display: none !important;
+    }
+
+    ::selection {
+        background-color: var(--color-accent-200);
+        color: var(--color-ink-900);
+    }
+}
+
+/* — Long-form prose — */
+@layer components {
+    .prose-brand {
+        @apply prose prose-lg max-w-none font-serif
+            prose-headings:font-sans prose-headings:text-ink-900
+            prose-a:text-accent-700 prose-a:no-underline hover:prose-a:underline
+            prose-strong:text-ink-900
+            prose-code:bg-ink-50 prose-code:text-ink-800 prose-code:px-1.5
+            prose-code:py-0.5 prose-code:rounded prose-code:font-normal
+            prose-code:before:content-none prose-code:after:content-none
+            prose-pre:bg-ink-900 prose-pre:text-ink-50 prose-pre:rounded-lg
+            prose-blockquote:border-l-accent-500 prose-blockquote:text-ink-700
+            prose-blockquote:not-italic prose-blockquote:font-serif;
+    }
+
+    .dark .prose-brand {
+        @apply prose-invert
+            prose-headings:text-ink-50
+            prose-a:text-accent-400
+            prose-strong:text-ink-50
+            prose-code:bg-ink-800 prose-code:text-ink-100;
+    }
+}
+
+/* — Ghost/Koenig content cards (mobiledoc output) — */
+@layer components {
+    .prose-brand figure {
+        display: block;
+        margin: 1.5em auto;
+    }
+
+    .prose-brand figure img {
+        vertical-align: top;
+        margin: 0 auto;
+    }
+
+    .prose-brand figcaption {
+        text-align: center;
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        color: var(--color-ink-500);
+        margin-top: 0.5em;
+    }
+
+    .dark .prose-brand figcaption {
+        color: var(--color-ink-400);
+    }
+
+    .prose-brand blockquote {
+        font-size: 1.25rem;
+        line-height: 1.35;
+    }
+
+    .kg-width-wide {
+        max-width: 1040px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .kg-width-full {
+        max-width: none;
+    }
+
+    .kg-image-card {
+        margin: 1.5em 0;
+    }
+
+    .kg-image-card img {
+        margin: 0 auto;
+    }
+
+    .kg-embed-card {
+        display: flex;
+        justify-content: center;
+        margin: 1.5em 0;
+    }
+
+    .kg-embed-card iframe {
+        width: 100%;
+    }
+
+    .kg-gallery-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75em;
+        margin: 1.5em 0;
+    }
+
+    .kg-gallery-row {
+        display: flex;
+        gap: 0.75em;
+    }
+
+    .kg-gallery-row img {
+        flex: 1;
+        height: auto;
+        object-fit: cover;
+    }
+
+    .kg-gallery-image img {
+        width: 100%;
+        height: auto;
+    }
+
+    .kg-bookmark-card {
+        border: 1px solid var(--color-surface-200);
+        border-radius: var(--radius-md);
+        overflow: hidden;
+        margin: 1.5em 0;
+        background-color: white;
+    }
+
+    .dark .kg-bookmark-card {
+        border-color: var(--color-ink-700);
+        background-color: var(--color-ink-900);
+    }
+
+    .kg-bookmark-card a {
+        display: flex;
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .kg-bookmark-content {
+        padding: 1rem;
+        flex: 1;
+    }
+
+    .kg-bookmark-title {
+        font-weight: 600;
+        color: var(--color-ink-900);
+    }
+
+    .dark .kg-bookmark-title {
+        color: var(--color-ink-50);
+    }
+
+    .kg-bookmark-description {
+        margin-top: 0.5rem;
+        font-size: 0.875rem;
+        color: var(--color-ink-500);
+    }
+
+    .kg-bookmark-metadata {
+        margin-top: 0.5rem;
+        font-size: 0.75rem;
+        color: var(--color-ink-400);
+    }
+
+    .kg-bookmark-thumbnail {
+        width: 200px;
+    }
+
+    .kg-bookmark-thumbnail img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+}
+
+/* — Reading progress bar — */
+@layer components {
+    .reading-progress {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 2px;
+        background-color: var(--color-accent-500);
+        z-index: 50;
+        transition: width var(--duration-quick) linear;
+    }
 }
