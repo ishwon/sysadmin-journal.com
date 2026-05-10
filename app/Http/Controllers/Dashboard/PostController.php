@@ -145,7 +145,7 @@ class PostController extends Controller
 
         $post->tags()->sync($validated['tags'] ?? []);
 
-        return redirect()->route('dashboard.posts.index')->with('success', 'Post updated.');
+        return redirect()->route('dashboard.posts.edit', $post)->with('success', 'Article updated.');
     }
 
     public function destroy(Post $post): RedirectResponse
