@@ -62,6 +62,9 @@
                     <x-ui.select name="status" label="Status"
                         :options="['draft' => 'Draft', 'published' => 'Published']"
                         :selected="old('status', $post->status ?? 'draft')" />
+                    <x-ui.input name="published_at" type="datetime-local" label="Publish date"
+                        :value="old('published_at', $post->published_at?->format('Y-m-d\TH:i'))"
+                        hint="Drives the date shown on the article. Leave empty to use publish time." />
                     <x-ui.input name="feature_image" label="Feature image URL" :value="old('feature_image', $post->feature_image ?? '')" />
                     <x-ui.input name="feature_image_alt" label="Feature image alt" :value="old('feature_image_alt', $post->feature_image_alt ?? '')" />
                     <x-ui.input name="feature_image_caption" label="Feature image caption" :value="old('feature_image_caption', $post->feature_image_caption ?? '')" />

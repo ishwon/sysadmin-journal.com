@@ -8,6 +8,7 @@ use App\Models\Post;
 use App\Models\Tag;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 use League\CommonMark\CommonMarkConverter;
@@ -41,6 +42,7 @@ class PostController extends Controller
             'feature_image_alt' => ['nullable', 'string'],
             'feature_image_caption' => ['nullable', 'string'],
             'status' => ['required', 'in:published,draft'],
+            'published_at' => ['nullable', 'date'],
             'tags' => ['nullable', 'array'],
             'meta_title' => ['nullable', 'string', 'max:255'],
             'meta_description' => ['nullable', 'string'],
@@ -66,7 +68,7 @@ class PostController extends Controller
             'type' => 'post',
             'status' => $validated['status'],
             'reading_time' => Post::calculateReadingTime($plaintext),
-            'published_at' => $validated['status'] === 'published' ? now() : null,
+            'published_at' => $this->resolvePublishedAt($validated['published_at'] ?? null, $validated['status'], null),
             'meta_title' => $validated['meta_title'],
             'meta_description' => $validated['meta_description'],
             'og_image' => $validated['og_image'],
@@ -111,6 +113,7 @@ class PostController extends Controller
             'feature_image_alt' => ['nullable', 'string'],
             'feature_image_caption' => ['nullable', 'string'],
             'status' => ['required', 'in:published,draft'],
+            'published_at' => ['nullable', 'date'],
             'tags' => ['nullable', 'array'],
             'meta_title' => ['nullable', 'string', 'max:255'],
             'meta_description' => ['nullable', 'string'],
@@ -135,7 +138,7 @@ class PostController extends Controller
             'feature_image_caption' => $validated['feature_image_caption'],
             'status' => $validated['status'],
             'reading_time' => Post::calculateReadingTime($plaintext),
-            'published_at' => $validated['status'] === 'published' && ! $post->published_at ? now() : $post->published_at,
+            'published_at' => $this->resolvePublishedAt($validated['published_at'] ?? null, $validated['status'], $post->published_at),
             'meta_title' => $validated['meta_title'],
             'meta_description' => $validated['meta_description'],
             'og_image' => $validated['og_image'],
@@ -153,6 +156,19 @@ class PostController extends Controller
         $post->delete();
 
         return redirect()->route('dashboard.posts.index')->with('success', 'Post deleted.');
+    }
+
+    private function resolvePublishedAt(?string $input, string $status, ?Carbon $existing): ?Carbon
+    {
+        if (filled($input)) {
+            return Carbon::parse($input);
+        }
+
+        if ($status === 'published' && ! $existing) {
+            return now();
+        }
+
+        return $existing;
     }
 
     private function resolveSlug(string $slug, ?int $excludeId = null): string
