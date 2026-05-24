@@ -36,7 +36,7 @@
         '@context' => 'https://schema.org',
         '@type' => 'BlogPosting',
         'headline' => $post->title,
-        'description' => $post->excerpt,
+        'description' => $post->plain_excerpt,
         'url' => url('/' . $post->slug),
         'datePublished' => $post->published_at?->toIso8601String(),
         'dateModified' => $post->updated_at?->toIso8601String(),

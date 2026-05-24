@@ -87,6 +87,14 @@ class Post extends Model
         return Str::limit($this->plaintext ?? '', 200);
     }
 
+    /**
+     * Excerpt with HTML stripped — safe for meta tags, search JSON, and JSON-LD.
+     */
+    public function getPlainExcerptAttribute(): string
+    {
+        return trim(strip_tags($this->excerpt));
+    }
+
     public static function calculateReadingTime(?string $text): int
     {
         if (! $text) {

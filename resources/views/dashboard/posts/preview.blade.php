@@ -38,7 +38,7 @@
                 @endif
                 <h1 class="mt-3 text-3xl md:text-5xl font-extrabold tracking-tight text-ink-900 dark:text-ink-50 leading-tight">{{ $post->title }}</h1>
                 @if ($post->excerpt)
-                    <p class="mt-5 font-serif text-xl text-ink-600 dark:text-ink-300 leading-relaxed">{{ $post->excerpt }}</p>
+                    <p class="mt-5 font-serif text-xl text-ink-600 dark:text-ink-300 leading-relaxed [&_a]:text-accent-700 hover:[&_a]:underline dark:[&_a]:text-accent-400">{!! $post->excerpt !!}</p>
                 @endif
 
                 <div class="mt-8 flex items-center gap-3">

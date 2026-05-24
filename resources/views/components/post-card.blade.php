@@ -11,7 +11,7 @@
     </div>
     <a href="/{{ $post->slug }}" class="block mt-4">
         <h3 class="text-xl font-semibold text-ink-900 dark:text-ink-50 group-hover:text-accent-700 dark:group-hover:text-accent-400 transition-colors">{{ $post->title }}</h3>
-        <p class="mt-3 text-base text-ink-500 dark:text-ink-300">{{ $post->excerpt }}</p>
+        <p class="mt-3 text-base text-ink-500 dark:text-ink-300 [&_a]:text-accent-700 hover:[&_a]:underline dark:[&_a]:text-accent-400">{!! $post->excerpt !!}</p>
     </a>
     <div class="mt-6 flex items-center">
         @if ($post->primaryAuthor())

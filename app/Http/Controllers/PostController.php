@@ -33,7 +33,7 @@ class PostController extends Controller
         $post->html = $this->renderGalleryShortcodes($post->html);
 
         $seoTitle = $post->meta_title ?: $post->title.' - SysAdmin Journal';
-        $seoDescription = $post->meta_description ?: $post->excerpt;
+        $seoDescription = $post->meta_description ?: $post->plain_excerpt;
 
         $viewData = [
             'post' => $post,

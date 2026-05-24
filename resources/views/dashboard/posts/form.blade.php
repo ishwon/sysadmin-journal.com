@@ -50,7 +50,7 @@
                 </div>
 
                 <div class="mt-4">
-                    <x-ui.textarea name="custom_excerpt" label="Custom excerpt" rows="3">{{ old('custom_excerpt', $post->custom_excerpt ?? '') }}</x-ui.textarea>
+                    <x-ui.textarea name="custom_excerpt" label="Custom excerpt" rows="3" hint="HTML is allowed — &lt;a&gt;, &lt;strong&gt;, &lt;em&gt; will render in the article.">{{ old('custom_excerpt', $post->custom_excerpt ?? '') }}</x-ui.textarea>
                 </div>
             </x-ui.card>
         </div>

@@ -30,7 +30,7 @@ class SearchController extends Controller
             ->map(fn ($post) => [
                 'title' => $post->title,
                 'slug' => $post->slug,
-                'excerpt' => Str::limit($post->excerpt, 100),
+                'excerpt' => Str::limit($post->plain_excerpt, 100),
                 'tag' => $post->primaryTag()?->name,
                 'date' => $post->published_at?->format('d F Y'),
             ]);
