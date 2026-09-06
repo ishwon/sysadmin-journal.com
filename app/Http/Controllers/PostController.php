@@ -10,13 +10,19 @@ class PostController extends Controller
 {
     public function index(): View
     {
-        $posts = Post::posts()
+        $published = Post::posts()
             ->published()
             ->with(['tags', 'authors'])
-            ->latest('published_at')
+            ->latest('published_at');
+
+        $featured = (clone $published)->first();
+
+        $posts = $published
+            ->when($featured, fn ($query) => $query->whereKeyNot($featured->getKey()))
             ->paginate(9);
 
         return view('posts.index', [
+            'featured' => $featured,
             'posts' => $posts,
             'seoTitle' => 'SysAdmin Journal',
             'seoDescription' => 'Thoughts, ideas and stories',

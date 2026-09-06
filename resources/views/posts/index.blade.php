@@ -10,7 +10,7 @@
         <p class="font-display italic text-xl leading-snug text-ink-500 sm:text-right sm:max-w-[36ch] text-pretty">Thoughts, ideas and stories from the command line.</p>
     </header>
 
-    @php $featured = $posts->onFirstPage() ? $posts->first() : null; @endphp
+    @php $featured = $posts->onFirstPage() ? $featured : null; @endphp
 
     @if ($featured)
         <article class="grid lg:grid-cols-2 gap-12 py-12 border-b border-ink-100 items-center">
@@ -36,7 +36,6 @@
 
     <div class="grid gap-x-12 sm:grid-cols-2 lg:grid-cols-3">
         @foreach ($posts as $post)
-            @continue($featured && $post->is($featured))
             @include('components.post-card', ['post' => $post])
         @endforeach
     </div>
