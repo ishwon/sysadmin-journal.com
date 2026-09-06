@@ -4,11 +4,11 @@ namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Models\Post;
+use App\Support\Markdown;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
-use League\CommonMark\CommonMarkConverter;
 
 class PageController extends Controller
 {
@@ -127,7 +127,7 @@ class PageController extends Controller
         }
 
         if ($format === 'markdown') {
-            return (new CommonMarkConverter)->convert($content)->getContent();
+            return Markdown::convert($content);
         }
 
         return $content;

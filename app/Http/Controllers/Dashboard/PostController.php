@@ -6,12 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Models\Gallery;
 use App\Models\Post;
 use App\Models\Tag;
+use App\Support\Markdown;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
-use League\CommonMark\CommonMarkConverter;
 
 class PostController extends Controller
 {
@@ -200,9 +200,7 @@ class PostController extends Controller
         }
 
         if ($format === 'markdown') {
-            $converter = new CommonMarkConverter;
-
-            return $converter->convert($content)->getContent();
+            return Markdown::convert($content);
         }
 
         return $content;
