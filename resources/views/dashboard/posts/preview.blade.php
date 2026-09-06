@@ -32,7 +32,7 @@
 
     <article class="relative py-12 md:py-16 bg-white dark:bg-ink-950">
         <div class="relative px-4 sm:px-6 lg:px-8">
-            <header class="max-w-[68ch] mx-auto">
+            <header class="max-w-measure mx-auto">
                 @if ($post->primaryTag())
                     <p class="text-xs uppercase tracking-wider font-semibold text-accent-700 dark:text-accent-400">{{ $post->primaryTag()->name }}</p>
                 @endif
@@ -73,7 +73,7 @@
                 </figure>
             @endif
 
-            <div class="prose-brand mt-10 max-w-[68ch] mx-auto">
+            <div class="prose-brand mt-10 max-w-measure mx-auto">
                 {!! $post->html !!}
             </div>
 

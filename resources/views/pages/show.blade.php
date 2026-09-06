@@ -2,7 +2,7 @@
 
 @section('content')
 <article class="px-6 pt-16 pb-24">
-    <header class="max-w-[68ch] mx-auto">
+    <header class="max-w-measure mx-auto">
         <p class="eyebrow">/{{ $post->slug }}/</p>
         <h1 class="display text-4xl md:text-[52px] md:leading-[1.08] mt-4">{{ $post->title }}</h1>
     </header>
@@ -16,7 +16,7 @@
         </figure>
     @endif
 
-    <div class="prose-brand mt-10 max-w-[68ch] mx-auto">
+    <div class="prose-brand mt-10 max-w-measure mx-auto">
         {!! $post->html !!}
     </div>
 </article>

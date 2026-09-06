@@ -15,7 +15,7 @@
 </div>
 
 <article class="px-6 pt-16 pb-24">
-    <header class="max-w-[68ch] mx-auto text-lg">
+    <header class="max-w-measure mx-auto text-lg">
         <p class="eyebrow">
             <a href="/" class="link-rise">/journal/</a>@if ($post->primaryTag())<a href="/tag/{{ $post->primaryTag()->slug }}" class="link-rise">{{ $post->primaryTag()->slug }}/</a>@endif
         </p>
@@ -51,7 +51,7 @@
         </figure>
     @endif
 
-    <div id="post-body" class="prose-brand mt-12 max-w-[68ch] mx-auto">
+    <div id="post-body" class="prose-brand mt-12 max-w-measure mx-auto">
         {!! $post->html !!}
         <p class="section-end" aria-hidden="true">॥</p>
     </div>
@@ -59,7 +59,7 @@
     @include('components.post-gallery', ['post' => $post])
 
     @isset($previous, $next)
-        <footer class="max-w-[68ch] mx-auto mt-12 pt-6 border-t border-ink-100 flex justify-between gap-6 meta">
+        <footer class="max-w-measure mx-auto mt-12 pt-6 border-t border-ink-100 flex justify-between gap-6 meta">
             @if ($previous)<a href="/{{ $previous->slug }}" class="link-rise">← {{ $previous->title }}</a>@else<span></span>@endif
             @if ($next)<a href="/{{ $next->slug }}" class="link-rise text-right">{{ $next->title }} →</a>@endif
         </footer>
