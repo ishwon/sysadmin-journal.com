@@ -46,3 +46,27 @@ it('excludes drafts, scheduled posts and pages from the feed', function () {
         ->assertDontSee('Scheduled post')
         ->assertDontSee('About page');
 });
+
+it('serves a per-tag RSS feed of the 20 latest tagged posts', function () {
+    $tag = Tag::factory()->create(['name' => 'openSUSE', 'slug' => 'opensuse']);
+    $tagged = Post::factory()->published()->count(21)->create();
+    $tag->posts()->attach($tagged->pluck('id'), ['sort_order' => 0]);
+    $tagged->first()->update(['published_at' => now()->subYear(), 'title' => 'Oldest tagged post']);
+    Post::factory()->published()->create(['title' => 'Untagged post']);
+
+    $response = $this->get('/tag/opensuse/rss');
+
+    $response->assertOk()
+        ->assertHeader('Content-Type', 'application/xml; charset=UTF-8')
+        ->assertSee('<title>SysAdmin Journal · openSUSE</title>', false)
+        ->assertSee('<link>'.url('/tag/opensuse').'</link>', false)
+        ->assertSee('href="'.url('/tag/opensuse/rss').'"', false)
+        ->assertDontSee('Untagged post')
+        ->assertDontSee('Oldest tagged post');
+
+    expect(substr_count($response->getContent(), '<item>'))->toBe(20);
+});
+
+it('returns 404 for a feed of an unknown tag', function () {
+    $this->get('/tag/nope/rss')->assertNotFound();
+});

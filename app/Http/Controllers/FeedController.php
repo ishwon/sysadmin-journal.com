@@ -3,17 +3,49 @@
 namespace App\Http\Controllers;
 
 use App\Models\Post;
+use App\Models\Tag;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Http\Response;
 
 class FeedController extends Controller
 {
+    private const int ITEM_LIMIT = 20;
+
     public function index(): Response
     {
-        $posts = Post::posts()
+        return $this->feedResponse(
+            Post::posts(),
+            title: 'SysAdmin Journal',
+            description: 'Thoughts, ideas and stories',
+            link: url('/'),
+            self: route('feed'),
+        );
+    }
+
+    public function tag(string $slug): Response
+    {
+        $tag = Tag::where('slug', $slug)->firstOrFail();
+
+        return $this->feedResponse(
+            $tag->posts()->posts(),
+            title: "SysAdmin Journal · {$tag->name}",
+            description: $tag->meta_description ?: "Posts tagged with {$tag->name}",
+            link: route('tags.show', $tag->slug),
+            self: route('tags.feed', $tag->slug),
+        );
+    }
+
+    /**
+     * @param  Builder<Post>|BelongsToMany<Post, Tag>  $query
+     */
+    private function feedResponse(Builder|BelongsToMany $query, string $title, string $description, string $link, string $self): Response
+    {
+        $posts = $query
             ->published()
             ->with(['tags', 'authors'])
             ->latest('published_at')
-            ->limit(20)
+            ->limit(self::ITEM_LIMIT)
             ->get();
 
         foreach ($posts as $post) {
@@ -24,8 +56,10 @@ class FeedController extends Controller
         return response()
             ->view('feed.rss', [
                 'posts' => $posts,
-                'title' => 'SysAdmin Journal',
-                'description' => 'Thoughts, ideas and stories',
+                'title' => $title,
+                'description' => $description,
+                'link' => $link,
+                'self' => $self,
                 'lastBuildDate' => $posts->first()?->published_at ?? now(),
             ])
             ->header('Content-Type', 'application/xml; charset=UTF-8');

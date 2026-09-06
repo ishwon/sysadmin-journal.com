@@ -2,11 +2,11 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:media="http://search.yahoo.com/mrss/">
     <channel>
         <title>{{ $title }}</title>
-        <link>{{ url('/') }}</link>
+        <link>{{ $link }}</link>
         <description>{{ $description }}</description>
         <language>en</language>
         <lastBuildDate>{{ $lastBuildDate->toRssString() }}</lastBuildDate>
-        <atom:link href="{{ route('feed') }}" rel="self" type="application/rss+xml" />
+        <atom:link href="{{ $self }}" rel="self" type="application/rss+xml" />
         <ttl>60</ttl>
 @foreach ($posts as $post)
         <item>

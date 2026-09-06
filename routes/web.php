@@ -49,6 +49,7 @@ Route::get('/search', [SearchController::class, 'search'])->name('search');
 Route::get('/gallery', [GalleryController::class, 'index'])->name('galleries.index');
 Route::get('/gallery/{slug}', [GalleryController::class, 'show'])->name('galleries.show');
 Route::get('/tag/{slug}', [TagController::class, 'show'])->name('tags.show');
+Route::get('/tag/{slug}/rss', [FeedController::class, 'tag'])->name('tags.feed');
 Route::get('/author/{slug}', [AuthorController::class, 'show'])->name('authors.show');
 
 // Post/Page catch-all (must be last)
