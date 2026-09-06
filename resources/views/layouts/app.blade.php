@@ -21,7 +21,7 @@
         <nav class="max-w-[1120px] mx-auto px-6 h-14 flex items-center justify-between gap-6" aria-label="Top">
             <div class="flex items-center gap-8 min-w-0 flex-1">
                 <a href="/" class="font-display text-xl font-medium tracking-tight text-white whitespace-nowrap shrink-0">SysAdmin Journal<span class="text-accent-300">.</span></a>
-                <div class="hidden lg:flex gap-5 font-mono text-[13px] tracking-wide min-w-0 overflow-hidden whitespace-nowrap [mask-image:linear-gradient(90deg,#000_85%,transparent)]">
+                <div class="hidden lg:flex gap-5 font-mono text-[13px] tracking-wide min-w-0 overflow-hidden whitespace-nowrap">
                     <a href="/about-me" class="{{ request()->is('about-me') ? 'text-accent-300' : 'text-ink-200' }} hover:text-white transition-colors">/about/</a>
                     <a href="/tag/linux" class="{{ request()->is('tag/linux') ? 'text-accent-300' : 'text-ink-200' }} hover:text-white transition-colors">/linux/</a>
                     <a href="/tag/conference" class="{{ request()->is('tag/conference') ? 'text-accent-300' : 'text-ink-200' }} hover:text-white transition-colors">/conferences/</a>
