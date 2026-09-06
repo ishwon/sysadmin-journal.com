@@ -11,6 +11,7 @@ use App\Http\Controllers\Dashboard\SitemapController;
 use App\Http\Controllers\Dashboard\TagController as DashboardTagController;
 use App\Http\Controllers\Dashboard\UserController as DashboardUserController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\FeedController;
 use App\Http\Controllers\GalleryController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\SearchController;
@@ -43,10 +44,12 @@ Route::prefix('dashboard')->middleware('auth')->name('dashboard.')->group(functi
 // Public
 Route::get('/', [PostController::class, 'index'])->name('home');
 Route::view('/brand-system', 'brand-system')->name('brand-system');
+Route::get('/rss', [FeedController::class, 'index'])->name('feed');
 Route::get('/search', [SearchController::class, 'search'])->name('search');
 Route::get('/gallery', [GalleryController::class, 'index'])->name('galleries.index');
 Route::get('/gallery/{slug}', [GalleryController::class, 'show'])->name('galleries.show');
 Route::get('/tag/{slug}', [TagController::class, 'show'])->name('tags.show');
+Route::get('/tag/{slug}/rss', [FeedController::class, 'tag'])->name('tags.feed');
 Route::get('/author/{slug}', [AuthorController::class, 'show'])->name('authors.show');
 
 // Post/Page catch-all (must be last)

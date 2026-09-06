@@ -23,6 +23,7 @@ class TagController extends Controller
             'posts' => $posts,
             'seoTitle' => ($tag->meta_title ?: $tag->name).' - SysAdmin Journal',
             'seoDescription' => $tag->meta_description ?: "Posts tagged with {$tag->name}",
+            'feedUrl' => route('tags.feed', $tag->slug),
         ]);
     }
 }
