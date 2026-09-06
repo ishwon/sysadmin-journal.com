@@ -13,6 +13,11 @@
  * Palette: white page · silver surfaces · midnight-indigo ink · verdigris accent · pastel-blue chips
  */
 @theme {
+    /* — Layout — */
+    /* Reading measure shared by article header, body and footer. A fixed unit,
+       because ch would scale with each container's own font. */
+    --container-measure: 46rem;
+
     /* — Typography — */
     --font-sans: 'Public Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
     --font-serif: 'Source Serif 4', ui-serif, Georgia, 'Times New Roman', serif;
