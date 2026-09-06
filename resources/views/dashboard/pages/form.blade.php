@@ -40,6 +40,8 @@
                         :options="['draft' => 'Draft', 'published' => 'Published']"
                         :selected="old('status', $page->status ?? 'draft')" />
                     <x-ui.input name="feature_image" label="Feature image URL" :value="old('feature_image', $page->feature_image ?? '')" />
+                    <x-ui.input name="feature_image_alt" label="Feature image alt text" :value="old('feature_image_alt', $page->feature_image_alt ?? '')" />
+                    <x-ui.input name="feature_image_caption" label="Feature image caption" :value="old('feature_image_caption', $page->feature_image_caption ?? '')" />
                 </div>
             </x-ui.card>
 
