@@ -13,7 +13,6 @@ class FeedController extends Controller
             ->published()
             ->with(['tags', 'authors'])
             ->latest('published_at')
-            ->limit(20)
             ->get();
 
         foreach ($posts as $post) {
@@ -28,7 +27,7 @@ class FeedController extends Controller
                 'description' => 'Thoughts, ideas and stories',
                 'lastBuildDate' => $posts->first()?->published_at ?? now(),
             ])
-            ->header('Content-Type', 'application/rss+xml; charset=UTF-8');
+            ->header('Content-Type', 'application/xml; charset=UTF-8');
     }
 
     /**

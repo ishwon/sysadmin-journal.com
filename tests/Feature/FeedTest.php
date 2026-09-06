@@ -18,7 +18,7 @@ it('serves an RSS feed of published posts', function () {
 
     $response = $this->get('/rss');
 
-    $response->assertOk()->assertHeader('Content-Type', 'application/rss+xml; charset=UTF-8');
+    $response->assertOk()->assertHeader('Content-Type', 'application/xml; charset=UTF-8');
 
     $xml = $response->getContent();
 
