@@ -7,107 +7,144 @@
     slugCheckUrl: {{ Js::from(route('dashboard.api.slug-check')) }},
     postId: {{ Js::from($post->id ?? '') }}
 })">
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {{-- Main column --}}
-        <div class="lg:col-span-2 space-y-6">
-            <x-ui.card padding="md">
-                <div class="space-y-4">
-                    <x-ui.input name="title" label="Title" x-model="title" @input.debounce.500ms="generateSlug()" required />
-                    <x-ui.input name="slug" label="Slug" x-model="slug" @input="slugManual = true" class="font-mono" required />
-                </div>
+    <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_300px] gap-16">
+        {{-- Editor column --}}
+        <div>
+            <input type="text" name="title" x-model="title" @input.debounce.500ms="generateSlug()" required placeholder="Post title"
+                class="w-full border-0 p-0 bg-transparent display text-4xl placeholder:text-ink-200 focus:outline-none focus:ring-0">
+            <div class="mt-3 flex items-center gap-2 meta">
+                <span>{{ parse_url(config('app.url'), PHP_URL_HOST) ?: 'sysadmin-journal.com' }}/</span>
+                <input type="text" name="slug" x-model="slug" @input="slugManual = true" required
+                    class="flex-1 border-0 border-b border-dashed border-ink-200 p-0 pb-0.5 bg-transparent font-mono text-xs text-ink-700 focus:outline-none focus:ring-0 focus:border-accent-500">
+            </div>
 
-                {{-- Tabs --}}
-                <div class="mt-6 border-b border-surface-200 dark:border-ink-700">
-                    <nav class="flex gap-6 -mb-px">
-                        <button type="button" @click="activeTab = 'editor'"
-                            :class="activeTab === 'editor' ? 'border-accent-500 text-accent-700 dark:text-accent-400' : 'border-transparent text-ink-500 hover:text-ink-800 hover:border-ink-300 dark:text-ink-400 dark:hover:text-ink-100'"
-                            class="py-2 px-1 border-b-2 text-sm font-medium transition-colors">
-                            Editor
-                        </button>
-                        <button type="button" @click="showPreview()"
-                            :class="activeTab === 'preview' ? 'border-accent-500 text-accent-700 dark:text-accent-400' : 'border-transparent text-ink-500 hover:text-ink-800 hover:border-ink-300 dark:text-ink-400 dark:hover:text-ink-100'"
-                            class="py-2 px-1 border-b-2 text-sm font-medium transition-colors">
-                            Preview
-                        </button>
-                    </nav>
+            {{-- Toolbar: format tabs · insert image · preview --}}
+            <div class="mt-8 pb-2 border-b border-ink-100 flex items-center justify-between gap-4">
+                <div class="flex gap-4 font-mono text-xs">
+                    <label class="cursor-pointer pb-2 -mb-[9px] border-b" :class="contentFormat === 'markdown' ? 'text-accent-700 border-accent-700' : 'text-ink-400 border-transparent'">
+                        <input type="radio" name="content_format" value="markdown" x-model="contentFormat" class="sr-only">markdown
+                    </label>
+                    <label class="cursor-pointer pb-2 -mb-[9px] border-b" :class="contentFormat === 'html' ? 'text-accent-700 border-accent-700' : 'text-ink-400 border-transparent'">
+                        <input type="radio" name="content_format" value="html" x-model="contentFormat" class="sr-only">html
+                    </label>
+                    <button type="button" @click="activeTab = activeTab === 'preview' ? 'editor' : 'preview'; if (activeTab === 'preview') showPreview()"
+                        class="pb-2 -mb-[9px] border-b" :class="activeTab === 'preview' ? 'text-accent-700 border-accent-700' : 'text-ink-400 border-transparent hover:text-ink-700'">preview</button>
                 </div>
+                <div class="flex items-center gap-3">
+                    <button type="button" @click="$dispatch('open-modal-insert-image')"
+                        class="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-sm border border-ink-200 bg-white font-mono text-[11px] text-ink-900 hover:bg-surface-50 transition-colors">
+                        <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                        insert image
+                    </button>
+                    <span class="meta" x-text="wordCount()"></span>
+                </div>
+            </div>
 
-                {{-- Editor pane --}}
-                <div x-show="activeTab === 'editor'" class="mt-4 space-y-4">
-                    <div>
-                        <p class="block text-sm font-medium text-ink-800 dark:text-ink-100 mb-1.5">Content format</p>
-                        <div class="flex gap-4">
-                            <x-ui.radio name="content_format" value="html" label="HTML" x-model="contentFormat" />
-                            <x-ui.radio name="content_format" value="markdown" label="Markdown" x-model="contentFormat" />
-                        </div>
-                    </div>
-                    <x-ui.textarea name="content" label="Content" rows="20" mono>{{ old('content', ($post->markdown ?? null) ?: ($post->html ?? '')) }}</x-ui.textarea>
-                </div>
+            <div x-show="activeTab === 'editor'" class="mt-4">
+                <textarea name="content" id="content" rows="24" x-ref="content" @input="$el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px'"
+                    class="w-full border-0 p-0 bg-transparent font-mono text-sm leading-[1.7] text-ink-700 resize-y focus:outline-none focus:ring-0">{{ old('content', ($post->markdown ?? null) ?: ($post->html ?? '')) }}</textarea>
+            </div>
 
-                {{-- Preview pane --}}
-                <div x-show="activeTab === 'preview'" x-cloak class="mt-4">
-                    <iframe x-ref="previewFrame" class="w-full rounded-md border border-surface-200 bg-white dark:border-ink-700" style="min-height: 600px;"></iframe>
-                </div>
+            <div x-show="activeTab === 'preview'" x-cloak class="mt-4">
+                <iframe x-ref="previewFrame" class="w-full rounded-sm border border-ink-100 bg-white" style="min-height: 640px;"></iframe>
+            </div>
 
-                <div class="mt-4">
-                    <x-ui.textarea name="custom_excerpt" label="Custom excerpt" rows="3" hint="HTML is allowed — &lt;a&gt;, &lt;strong&gt;, &lt;em&gt; will render in the article.">{{ old('custom_excerpt', $post->custom_excerpt ?? '') }}</x-ui.textarea>
-                </div>
-            </x-ui.card>
+            <div class="mt-8 pt-6 border-t border-ink-100">
+                <label for="custom_excerpt" class="block eyebrow mb-2">/excerpt/</label>
+                <textarea name="custom_excerpt" id="custom_excerpt" rows="2" placeholder="Leave empty to use the first paragraph."
+                    class="w-full rounded-sm border border-ink-200 px-3 py-2.5 font-serif text-base leading-relaxed text-ink-900 placeholder:text-ink-300 focus:outline-none focus:border-accent-500 focus:shadow-[var(--shadow-focus)] resize-y">{{ old('custom_excerpt', $post->custom_excerpt ?? '') }}</textarea>
+                <p class="mt-1.5 font-mono text-[11px] text-ink-400">HTML is allowed — &lt;a&gt;, &lt;strong&gt;, &lt;em&gt; will render in the article.</p>
+            </div>
         </div>
 
         {{-- Sidebar --}}
-        <div class="space-y-6">
-            <x-ui.card title="Publish">
-                <div class="space-y-4">
-                    <x-ui.select name="status" label="Status"
-                        :options="['draft' => 'Draft', 'published' => 'Published']"
-                        :selected="old('status', $post->status ?? 'draft')" />
-                    <x-ui.input name="published_at" type="datetime-local" label="Publish date"
+        <aside class="flex flex-col divide-y divide-ink-100">
+            <section class="pb-6">
+                <h3 class="eyebrow mb-3">/publish/</h3>
+                <div class="space-y-3">
+                    <x-ui.select name="status" label="Status" :options="['draft' => 'Draft', 'published' => 'Published']" :selected="old('status', $post->status ?? 'draft')" />
+                    <x-ui.input name="published_at" type="datetime-local" label="Publish date" class="font-mono text-xs"
                         :value="old('published_at', $post->published_at?->format('Y-m-d\TH:i'))"
                         hint="Drives the date shown on the article. Leave empty to use publish time." />
-                    <x-ui.input name="feature_image" label="Feature image URL" :value="old('feature_image', $post->feature_image ?? '')" />
-                    <x-ui.input name="feature_image_alt" label="Feature image alt" :value="old('feature_image_alt', $post->feature_image_alt ?? '')" />
-                    <x-ui.input name="feature_image_caption" label="Feature image caption" :value="old('feature_image_caption', $post->feature_image_caption ?? '')" />
                 </div>
-            </x-ui.card>
+            </section>
 
             @isset($tags)
-                <x-ui.card title="Tags">
-                    <div class="max-h-48 overflow-y-auto space-y-2">
+                <section class="py-6">
+                    <h3 class="eyebrow mb-3">/tags/</h3>
+                    <div class="flex flex-wrap gap-1.5">
                         @foreach ($tags as $tag)
-                            <x-ui.checkbox
-                                name="tags[]"
-                                :value="$tag->id"
-                                :id="'tag_' . $tag->id"
-                                :label="$tag->name"
-                                :checked="in_array($tag->id, old('tags', isset($post) ? $post->tags->pluck('id')->toArray() : []))" />
+                            @php $on = in_array($tag->id, old('tags', isset($post) ? $post->tags->pluck('id')->toArray() : [])); @endphp
+                            <label class="cursor-pointer">
+                                <input type="checkbox" name="tags[]" value="{{ $tag->id }}" @checked($on) class="peer sr-only">
+                                <span class="inline-flex rounded-xs px-2 py-[3px] font-mono text-[11px] border border-ink-100 text-ink-400 transition-colors peer-checked:bg-sky-100 peer-checked:border-sky-200 peer-checked:text-ink-900 hover:border-ink-300">{{ $tag->name }}</span>
+                            </label>
                         @endforeach
                     </div>
-                </x-ui.card>
+                </section>
             @endisset
+
+            <section class="py-6">
+                <h3 class="eyebrow mb-3">/feature-image/</h3>
+                <div class="space-y-2">
+                    <x-ui.input name="feature_image" placeholder="Image URL" :value="old('feature_image', $post->feature_image ?? '')" class="font-mono text-xs" />
+                    <x-ui.input name="feature_image_alt" placeholder="Alt text" :value="old('feature_image_alt', $post->feature_image_alt ?? '')" />
+                    <x-ui.input name="feature_image_caption" placeholder="Caption" :value="old('feature_image_caption', $post->feature_image_caption ?? '')" />
+                </div>
+            </section>
 
             @isset($galleries)
-                <x-ui.card title="Gallery">
-                    <x-ui.select name="gallery_id"
-                        :options="$galleries->pluck('title', 'id')->toArray()"
-                        :selected="old('gallery_id', $post->gallery_id ?? '')"
-                        placeholder="None"
-                        hint="Displayed at the bottom of the article." />
-                </x-ui.card>
+                <section class="py-6">
+                    <h3 class="eyebrow mb-3">/gallery/</h3>
+                    <x-ui.select name="gallery_id" :options="$galleries->pluck('title', 'id')->toArray()" :selected="old('gallery_id', $post->gallery_id ?? '')" placeholder="None" hint="Displayed at the bottom of the article." />
+                </section>
             @endisset
 
-            <x-ui.card title="SEO" subtitle="Overrides for crawlers.">
-                <div class="space-y-3">
-                    <x-ui.input name="meta_title" label="Meta title" :value="old('meta_title', $post->meta_title ?? '')" />
-                    <x-ui.textarea name="meta_description" label="Meta description" rows="2">{{ old('meta_description', $post->meta_description ?? '') }}</x-ui.textarea>
-                    <x-ui.input name="og_image" label="OG image URL" :value="old('og_image', $post->og_image ?? '')" />
-                    <x-ui.input name="twitter_image" label="Twitter image URL" :value="old('twitter_image', $post->twitter_image ?? '')" />
+            <section class="py-6">
+                <h3 class="eyebrow mb-3">/seo/</h3>
+                <div class="space-y-2">
+                    <x-ui.input name="meta_title" placeholder="Meta title" :value="old('meta_title', $post->meta_title ?? '')" />
+                    <x-ui.textarea name="meta_description" placeholder="Meta description" rows="2">{{ old('meta_description', $post->meta_description ?? '') }}</x-ui.textarea>
+                    <x-ui.input name="og_image" placeholder="OG image URL" :value="old('og_image', $post->og_image ?? '')" class="font-mono text-xs" />
+                    <x-ui.input name="twitter_image" placeholder="Twitter image URL" :value="old('twitter_image', $post->twitter_image ?? '')" class="font-mono text-xs" />
+                    <p class="font-mono text-[11px] text-ink-400">og image falls back to the feature image.</p>
                 </div>
-            </x-ui.card>
+            </section>
 
-            <x-ui.button type="submit" variant="primary" class="w-full">
-                {{ isset($post) && $post->exists ? 'Save changes' : 'Create post' }}
-            </x-ui.button>
-        </div>
+            <section class="pt-6">
+                <x-ui.button type="submit" variant="primary" class="w-full">
+                    {{ isset($post) && $post->exists ? 'Save changes' : 'Create post' }}
+                </x-ui.button>
+            </section>
+        </aside>
     </div>
+
+    {{-- Insert image dialog --}}
+    <x-ui.modal name="insert-image" eyebrow="/insert-image/" title="Insert image" size="sm">
+        <div class="space-y-3.5" x-data="{ url: '', caption: '', alt: '' }" x-on:open-modal-insert-image.window="url = ''; caption = ''; alt = ''; $nextTick(() => $refs.url.focus())">
+            <div>
+                <label class="block text-[13px] font-medium text-ink-900 mb-1.5">Image URL</label>
+                <input type="text" x-ref="url" x-model="url" placeholder="/content/images/2026/04/…"
+                    class="w-full rounded-sm border border-ink-200 px-3 py-2 font-mono text-[13px] text-ink-900 placeholder:text-ink-300 focus:outline-none focus:border-accent-500 focus:shadow-[var(--shadow-focus)]">
+                <p class="mt-1.5 font-mono text-[11px] text-ink-400">paste a URL or copy one from <a href="{{ route('dashboard.media.index') }}" target="_blank" class="link-rise">media</a></p>
+            </div>
+            <div>
+                <label class="block text-[13px] font-medium text-ink-900 mb-1.5">Caption</label>
+                <input type="text" x-model="caption" placeholder="Shown under the image"
+                    class="w-full rounded-sm border border-ink-200 px-3 py-2 text-sm text-ink-900 placeholder:text-ink-300 focus:outline-none focus:border-accent-500 focus:shadow-[var(--shadow-focus)]">
+            </div>
+            <div>
+                <label class="block text-[13px] font-medium text-ink-900 mb-1.5">Alt text</label>
+                <input type="text" x-model="alt" placeholder="Describe the image for screen readers"
+                    class="w-full rounded-sm border border-ink-200 px-3 py-2 text-sm text-ink-900 placeholder:text-ink-300 focus:outline-none focus:border-accent-500 focus:shadow-[var(--shadow-focus)]">
+            </div>
+            <div class="pt-4 border-t border-ink-100 flex items-center justify-between gap-3">
+                <code class="font-mono text-[11px] text-ink-400 truncate min-w-0" x-text="url ? imageSnippet(url, alt, caption) : 'snippet preview'"></code>
+                <div class="flex gap-2 shrink-0">
+                    <x-ui.button type="button" variant="secondary" size="sm" x-on:click="$dispatch('close-modal-insert-image')">Cancel</x-ui.button>
+                    <x-ui.button type="button" variant="primary" size="sm" x-on:click="insertImage(url, alt, caption); $dispatch('close-modal-insert-image')" x-bind:disabled="!url">Insert</x-ui.button>
+                </div>
+            </div>
+        </div>
+    </x-ui.modal>
 </div>

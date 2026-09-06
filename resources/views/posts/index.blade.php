@@ -1,42 +1,58 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="bg-white dark:bg-ink-950 pt-16 pb-20 px-4 sm:px-6 lg:pt-24 lg:pb-28 lg:px-8">
-    <div class="relative max-w-lg mx-auto lg:max-w-6xl">
-        <header class="pb-8 border-b border-surface-200 dark:border-ink-800">
-            <p class="text-xs uppercase tracking-wider font-semibold text-accent-700 dark:text-accent-400">Journal</p>
-            <h1 class="mt-2 text-3xl font-extrabold tracking-tight text-ink-900 dark:text-ink-50 sm:text-4xl">Latest posts</h1>
-            <p class="mt-3 text-lg font-serif text-ink-600 dark:text-ink-300">Thoughts, ideas and stories from the command line.</p>
-        </header>
-
-        <div class="mt-12 grid gap-x-8 gap-y-16 lg:grid-cols-3 lg:gap-y-12">
-            @foreach ($posts as $post)
-                @include('components.post-card', ['post' => $post])
-            @endforeach
+<div class="max-w-[1120px] mx-auto px-6 pt-16 pb-24">
+    <header class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 pb-6 border-b border-ink-100">
+        <div>
+            <p class="eyebrow">/journal/</p>
+            <h1 class="display text-5xl mt-2">Latest posts</h1>
         </div>
+        <p class="font-display italic text-xl leading-snug text-ink-500 sm:text-right sm:max-w-[36ch] text-pretty">Thoughts, ideas and stories from the command line.</p>
+    </header>
 
-        @if ($posts->hasPages())
-            <nav class="mt-16 pt-8 border-t border-surface-200 dark:border-ink-800 flex items-center justify-between gap-4" aria-label="Pagination">
-                <p class="text-sm text-ink-500 dark:text-ink-400 hidden sm:block">
-                    Page <span class="font-medium text-ink-800 dark:text-ink-100">{{ $posts->currentPage() }}</span>
-                    of <span class="font-medium text-ink-800 dark:text-ink-100">{{ $posts->lastPage() }}</span>
-                </p>
-                <div class="flex-1 flex justify-between sm:justify-end gap-3">
-                    @if ($posts->previousPageUrl())
-                        <a href="{{ $posts->previousPageUrl() }}" class="inline-flex h-10 items-center gap-1.5 rounded-md border border-ink-200 bg-white px-4 text-sm font-medium text-ink-700 hover:bg-surface-100 transition-colors dark:bg-ink-900 dark:border-ink-700 dark:text-ink-200 dark:hover:bg-ink-800">
-                            <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 010 1.06L9.06 10l3.73 3.71a.75.75 0 11-1.06 1.06l-4.25-4.24a.75.75 0 010-1.06l4.25-4.24a.75.75 0 011.06 0z" clip-rule="evenodd"/></svg>
-                            Newer
-                        </a>
-                    @endif
-                    @if ($posts->nextPageUrl())
-                        <a href="{{ $posts->nextPageUrl() }}" class="inline-flex h-10 items-center gap-1.5 rounded-md border border-ink-200 bg-white px-4 text-sm font-medium text-ink-700 hover:bg-surface-100 transition-colors dark:bg-ink-900 dark:border-ink-700 dark:text-ink-200 dark:hover:bg-ink-800">
-                            Older
-                            <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 010-1.06L10.94 10 7.21 6.29a.75.75 0 111.06-1.06l4.25 4.24a.75.75 0 010 1.06l-4.25 4.24a.75.75 0 01-1.06 0z" clip-rule="evenodd"/></svg>
-                        </a>
-                    @endif
-                </div>
-            </nav>
-        @endif
+    @php $featured = $posts->onFirstPage() ? $posts->first() : null; @endphp
+
+    @if ($featured)
+        <article class="grid lg:grid-cols-2 gap-12 py-12 border-b border-ink-100 items-center">
+            <div>
+                @if ($featured->primaryTag())
+                    <p class="eyebrow">/journal/{{ $featured->primaryTag()->slug }}/</p>
+                @endif
+                <a href="/{{ $featured->slug }}" class="block mt-3 text-ink-900 hover:text-accent-700 transition-colors duration-[var(--duration-quick)]">
+                    <h2 class="display text-4xl">{{ $featured->title }}</h2>
+                </a>
+                <p class="mt-4 font-serif text-lg leading-relaxed text-ink-500 text-pretty [&_a]:text-accent-700 hover:[&_a]:underline">{!! $featured->excerpt !!}</p>
+                <p class="meta mt-5">{{ $featured->published_at?->format('j F Y') }} · {{ $featured->reading_time }} min read</p>
+            </div>
+            @if ($featured->feature_image)
+                <a href="/{{ $featured->slug }}" class="block">
+                    <img class="w-full aspect-[16/10] object-cover rounded-md border border-ink-100" src="{{ $featured->feature_image }}" alt="{{ $featured->feature_image_alt }}">
+                </a>
+            @else
+                <div class="hidden lg:block aspect-[16/10] rounded-md border border-ink-100 bg-surface-50"></div>
+            @endif
+        </article>
+    @endif
+
+    <div class="grid gap-x-12 sm:grid-cols-2 lg:grid-cols-3">
+        @foreach ($posts as $post)
+            @continue($featured && $post->is($featured))
+            @include('components.post-card', ['post' => $post])
+        @endforeach
     </div>
+
+    @if ($posts->hasPages())
+        <nav class="pt-6 flex items-center justify-between meta" aria-label="Pagination">
+            <span>page {{ $posts->currentPage() }} / {{ $posts->lastPage() }}</span>
+            <div class="flex gap-6">
+                @if ($posts->previousPageUrl())
+                    <a href="{{ $posts->previousPageUrl() }}" class="link-rise">← newer posts</a>
+                @endif
+                @if ($posts->nextPageUrl())
+                    <a href="{{ $posts->nextPageUrl() }}" class="link-rise">older posts →</a>
+                @endif
+            </div>
+        </nav>
+    @endif
 </div>
 @endsection

@@ -20,6 +20,41 @@ function postForm(config) {
             this.slug = data.slug;
         },
 
+        wordCount: function () {
+            var el = document.getElementById('content');
+            if (!el) return '';
+            var words = (el.value || '').trim().split(/\s+/).filter(Boolean).length;
+            return words.toLocaleString() + ' words · ' + Math.max(1, Math.round(words / 220)) + ' min';
+        },
+
+        /* — Insert image — */
+        imageSnippet: function (url, alt, caption) {
+            if (this.contentFormat === 'markdown') {
+                // CommonMark: title attribute carries the caption; the server turns it into <figcaption>.
+                return '![' + (alt || '') + '](' + url + (caption ? ' "' + caption.replace(/"/g, '\\"') + '"' : '') + ')';
+            }
+            var html = '<figure><img src="' + this.escapeAttr(url) + '" alt="' + this.escapeAttr(alt || '') + '">';
+            if (caption) html += '<figcaption>' + this.escapeHtml(caption) + '</figcaption>';
+            return html + '</figure>';
+        },
+
+        insertImage: function (url, alt, caption) {
+            if (!url) return;
+            var ta = document.getElementById('content');
+            var snippet = this.imageSnippet(url, alt, caption);
+            var start = ta.selectionStart, end = ta.selectionEnd, v = ta.value;
+            var before = v.slice(0, start), after = v.slice(end);
+            var pad = before.length && !/\n\n$/.test(before) ? (/\n$/.test(before) ? '\n' : '\n\n') : '';
+            var tail = after.length && !/^\n/.test(after) ? '\n\n' : '\n';
+            ta.value = before + pad + snippet + tail + after;
+            var caret = (before + pad + snippet).length;
+            ta.focus();
+            ta.setSelectionRange(caret, caret);
+            ta.style.height = 'auto';
+            ta.style.height = ta.scrollHeight + 'px';
+        },
+
+        /* — Preview — */
         showPreview: function () {
             this.activeTab = 'preview';
             var self = this;
@@ -28,68 +63,45 @@ function postForm(config) {
 
         renderPreview: function () {
             var raw = document.getElementById('content').value || '';
-            var html = this.contentFormat === 'markdown' ? marked.parse(raw) : raw;
+            var html = this.contentFormat === 'markdown' ? this.figuresFromTitles(marked.parse(raw)) : raw;
             var featureImage = document.getElementById('feature_image').value || '';
             var featureAlt = document.getElementById('feature_image_alt').value || '';
             var featureCaption = document.getElementById('feature_image_caption').value || '';
 
             var figureHtml = '';
             if (featureImage) {
-                figureHtml = '<figure class="mt-6"><img class="rounded" src="' + this.escapeHtml(featureImage) + '" alt="' + this.escapeHtml(featureAlt) + '">';
-                if (featureCaption) {
-                    figureHtml += '<figcaption class="text-left">' + featureCaption + '</figcaption>';
-                }
+                figureHtml = '<figure class="feature"><img src="' + this.escapeAttr(featureImage) + '" alt="' + this.escapeAttr(featureAlt) + '">';
+                if (featureCaption) figureHtml += '<figcaption>' + featureCaption + '</figcaption>';
                 figureHtml += '</figure>';
             }
 
-            var titleHtml = this.escapeHtml(this.title || 'Untitled');
-
+            var css = document.querySelector('link[href*="app"][rel="stylesheet"]');
             var parts = [];
-            parts.push('<!DOCTYPE html><html><head>');
-            parts.push('<meta charset="UTF-8">');
-            parts.push('<meta name="viewport" content="width=device-width, initial-scale=1.0">');
-            parts.push('<link rel="preconnect" href="https://fonts.googleapis.com">');
-            parts.push('<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>');
-            parts.push('<link rel="stylesheet" href="https://use.typekit.net/ikg3vvf.css">');
-            parts.push('<script src="https://cdn.tailwindcss.com?plugins=typography"><' + '/script>');
-            parts.push('<style>');
-            parts.push('body{font-family:Lato,sans-serif}');
-            parts.push('figure{display:inline-block}figure img{vertical-align:top}');
-            parts.push('figure figcaption{text-align:center;font-family:"Courier New",Courier,monospace;font-size:9px}');
-            parts.push('code{background-color:#e5e7eb;display:inline-flex;padding:0.125rem 0.75rem;border-radius:0.25rem}');
-            parts.push('blockquote{font-size:21px;line-height:110%}');
-            parts.push('.kg-width-wide{max-width:1040px;margin:0 auto}.kg-width-full{max-width:none}');
-            parts.push('.kg-image-card{margin:1.5em 0}.kg-image-card img{margin:0 auto}');
-            parts.push('.kg-embed-card{display:flex;justify-content:center;margin:1.5em 0}.kg-embed-card iframe{width:100%}');
-            parts.push('.kg-gallery-container{display:flex;flex-direction:column;gap:0.75em;margin:1.5em 0}');
-            parts.push('.kg-gallery-row{display:flex;gap:0.75em}.kg-gallery-row img{flex:1;height:auto;object-fit:cover}');
-            parts.push('.kg-gallery-image img{width:100%;height:auto}');
-            parts.push('.kg-bookmark-card{border:1px solid #e5e7eb;border-radius:0.375rem;overflow:hidden;margin:1.5em 0}');
-            parts.push('.kg-bookmark-card a{display:flex;text-decoration:none;color:inherit}');
-            parts.push('.kg-bookmark-content{padding:1rem;flex:1}.kg-bookmark-title{font-weight:600}');
-            parts.push('.kg-bookmark-description{margin-top:0.5rem;font-size:0.875rem;color:#6b7280}');
-            parts.push('.kg-bookmark-metadata{margin-top:0.5rem;font-size:0.75rem;color:#9ca3af}');
-            parts.push('.kg-bookmark-thumbnail{width:200px}.kg-bookmark-thumbnail img{width:100%;height:100%;object-fit:cover}');
-            parts.push('</style></head><body>');
-            parts.push('<div class="relative py-12 bg-white overflow-hidden">');
-            parts.push('<div class="relative px-4 sm:px-6 lg:px-8">');
-            parts.push('<div class="text-lg max-w-4xl mx-auto">');
-            parts.push('<h1><span class="mt-2 block text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">');
-            parts.push(titleHtml);
-            parts.push('</span></h1>');
-            parts.push(figureHtml);
-            parts.push('</div>');
-            parts.push('<div class="mt-6 max-w-4xl prose prose-emerald prose-lg text-gray-600 mx-auto">');
-            parts.push(html);
-            parts.push('</div></div></div></body></html>');
+            parts.push('<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">');
+            parts.push('<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,ital,wght@8..60,0,400;8..60,0,600;8..60,1,400&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=JetBrains+Mono:wght@400;500&display=swap">');
+            if (css) parts.push('<link rel="stylesheet" href="' + css.href + '">');
+            parts.push('<style>body{margin:0;background:#fff}.wrap{max-width:68ch;margin:0 auto;padding:48px 24px}h1{font-family:Newsreader,Georgia,serif;font-weight:500;font-size:44px;line-height:1.1;letter-spacing:-.02em;color:#161b30;margin:0}.feature{margin:32px 0 0}.feature img{width:100%;border-bottom:1px solid #e6e8f0}.feature figcaption{margin-top:8px;font-family:"JetBrains Mono",monospace;font-size:12px;color:#6b7596}</style>');
+            parts.push('</head><body><div class="wrap"><h1>' + this.escapeHtml(this.title || 'Untitled') + '</h1>' + figureHtml);
+            parts.push('<div class="prose-brand" style="margin-top:40px">' + html + '</div></div></body></html>');
 
             this.$refs.previewFrame.srcdoc = parts.join('');
+        },
+
+        // Mirror of App\Support\Markdown::wrapFigures for the live preview.
+        figuresFromTitles: function (html) {
+            return html.replace(/<p>\s*(<img\b[^>]*\btitle="([^"]*)"[^>]*>)\s*<\/p>/g, function (_, img, title) {
+                return '<figure>' + img.replace(/\s*title="[^"]*"/, '') + '<figcaption>' + title + '</figcaption></figure>';
+            });
         },
 
         escapeHtml: function (text) {
             var d = document.createElement('div');
             d.textContent = text;
             return d.innerHTML;
+        },
+
+        escapeAttr: function (text) {
+            return String(text).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
         }
     };
 }
