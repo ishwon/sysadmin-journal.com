@@ -7,53 +7,38 @@
     <link rel="icon" type="image/png" href="/favicon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
-    <script>
-        (function () {
-            try {
-                var s = localStorage.theme;
-                if (s === 'dark' || (!s && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                    document.documentElement.classList.add('dark');
-                }
-            } catch (e) {}
-        })();
-    </script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,500;1,6..72,400&family=JetBrains+Mono:wght@400;500&family=Noto+Serif+Devanagari:wght@400&display=swap">
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     @vite(['resources/css/app.css'])
 </head>
-<body class="font-sans bg-ink-900 text-ink-100 min-h-screen flex items-center justify-center antialiased">
-    <div class="max-w-md w-full mx-4">
-        <div class="text-center mb-8">
-            <div class="inline-flex items-center gap-2 text-white">
-                <svg class="h-6 w-6 text-accent-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path d="M3 4a2 2 0 012-2h10a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V4zm3 2h8v2H6V6zm0 4h8v2H6v-2zm0 4h5v2H6v-2z" />
-                </svg>
-                <h1 class="text-2xl font-extrabold">SysAdmin Journal</h1>
+<body class="font-sans bg-white text-ink-700 antialiased">
+    <div class="min-h-screen grid lg:grid-cols-[5fr_7fr]">
+        <div class="hidden lg:flex bg-ink-900 text-surface-100 p-12 flex-col justify-between">
+            <a href="/" class="font-display text-[22px] font-medium text-white">SysAdmin Journal<span class="text-accent-300">.</span></a>
+            <div>
+                <p class="font-deva text-[28px] leading-normal text-white">विद्या ददाति विनयं</p>
+                <p class="mt-2 font-display italic text-lg text-ink-300">vidyā dadāti vinayaṃ — knowledge gives humility.</p>
             </div>
-            <p class="mt-2 text-sm text-ink-300">Sign in to your dashboard</p>
+            <p class="font-mono text-xs tracking-wide text-ink-400">/dashboard/ · v2.0</p>
         </div>
 
-        <div class="bg-white dark:bg-ink-800 rounded-lg shadow-xl p-8 border border-ink-700/50">
-            @if ($errors->any())
-                <div class="mb-4">
-                    <x-ui.alert tone="danger">{{ $errors->first() }}</x-ui.alert>
-                </div>
-            @endif
-
-            <form method="POST" action="{{ route('login') }}" class="space-y-4">
+        <div class="flex items-center justify-center p-8 lg:p-12">
+            <form method="POST" action="{{ route('login') }}" class="w-full max-w-[360px] flex flex-col gap-5">
                 @csrf
-                <x-ui.input name="email" type="email" label="Email" :value="old('email')" required autofocus />
-                <x-ui.input name="password" type="password" label="Password" required />
-                <div class="pt-1">
-                    <x-ui.checkbox name="remember" label="Remember me" />
+                <div>
+                    <p class="eyebrow">/login/</p>
+                    <h1 class="display text-4xl mt-2">Sign in</h1>
                 </div>
-                <x-ui.button type="submit" variant="primary" class="w-full">Sign in</x-ui.button>
+                @if ($errors->any())
+                    <x-ui.alert tone="danger">{{ $errors->first() }}</x-ui.alert>
+                @endif
+                <x-ui.input name="email" type="email" label="Email" :value="old('email')" required autofocus class="py-2.5" />
+                <x-ui.input name="password" type="password" label="Password" required class="py-2.5" />
+                <x-ui.checkbox name="remember" label="Remember me" />
+                <x-ui.button type="submit" variant="primary" size="lg" class="w-full h-11">Sign in</x-ui.button>
+                <p class="meta"><a href="/" class="link-rise">← back to site</a></p>
             </form>
         </div>
-
-        <p class="mt-6 text-center text-xs text-ink-400">
-            <a href="/" class="hover:text-accent-400 transition-colors">&larr; Back to site</a>
-        </p>
     </div>
 </body>
 </html>

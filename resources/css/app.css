@@ -8,93 +8,106 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/*
+ * SysAdmin Journal — v2 theme ("Scholar's Terminal", white variant)
+ * Palette: white page · silver surfaces · midnight-indigo ink · verdigris accent · pastel-blue chips
+ */
 @theme {
     /* — Typography — */
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
-    --font-serif: 'Lora', ui-serif, Georgia, 'Times New Roman', serif;
+    --font-sans: 'Public Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --font-serif: 'Source Serif 4', ui-serif, Georgia, 'Times New Roman', serif;
+    --font-display: 'Newsreader', ui-serif, Georgia, serif;
     --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+    --font-deva: 'Noto Serif Devanagari', 'Source Serif 4', serif;
 
-    /* — Ink (primary #27374D) — */
-    --color-ink-50: #f4f6f9;
-    --color-ink-100: #e4e9f0;
-    --color-ink-200: #c5cfdc;
-    --color-ink-300: #9aabc0;
-    --color-ink-400: #6b7f9a;
-    --color-ink-500: #4a5f7d;
-    --color-ink-600: #364a66;
-    --color-ink-700: #2d3f56;
-    --color-ink-800: #27374d;
-    --color-ink-900: #1c2838;
-    --color-ink-950: #121a25;
+    /* — Ink (midnight indigo) — */
+    --color-ink-50: #f4f5f9;
+    --color-ink-100: #e6e8f0;
+    --color-ink-200: #c8cddd;
+    --color-ink-300: #9ba3bd;
+    --color-ink-400: #6b7596;
+    --color-ink-500: #4a5479;
+    --color-ink-600: #353d5d;
+    --color-ink-700: #2a304a;
+    --color-ink-800: #1f2540;
+    --color-ink-900: #161b30;
+    --color-ink-950: #0d1020;
 
-    /* — Accent (emerald #10b981) — */
-    --color-accent-50: #ecfdf5;
-    --color-accent-100: #d1fae5;
-    --color-accent-200: #a7f3d0;
-    --color-accent-300: #6ee7b7;
-    --color-accent-400: #34d399;
-    --color-accent-500: #10b981;
-    --color-accent-600: #059669;
-    --color-accent-700: #047857;
-    --color-accent-800: #065f46;
-    --color-accent-900: #064e3b;
+    /* — Accent (verdigris) — */
+    --color-accent-50: #ecf5f0;
+    --color-accent-100: #d3e8db;
+    --color-accent-200: #a6d0b6;
+    --color-accent-300: #71b48d;
+    --color-accent-400: #449970;
+    --color-accent-500: #2f7d5f;
+    --color-accent-600: #25634c;
+    --color-accent-700: #1d4f3d;
+    --color-accent-800: #173f31;
+    --color-accent-900: #112e25;
 
-    /* — Surface (#DDE6ED) — */
-    --color-surface-50: #f8fafc;
-    --color-surface-100: #eef3f7;
-    --color-surface-200: #dde6ed;
-    --color-surface-300: #c2d0dc;
-    --color-surface-400: #97aaba;
-    --color-surface-500: #6e8294;
+    /* — Surface (silver) — */
+    --color-surface-50: #f4f5f7;
+    --color-surface-100: #e9ebef;
+    --color-surface-200: #d8dce2;
+    --color-surface-300: #b9bfc9;
+    --color-surface-400: #8d95a3;
+    --color-surface-500: #687081;
 
-    /* — Danger (#EA5455) — */
-    --color-danger-50: #fef2f2;
-    --color-danger-100: #fee2e2;
-    --color-danger-200: #fecaca;
-    --color-danger-300: #fca5a5;
-    --color-danger-400: #f77676;
-    --color-danger-500: #ea5455;
-    --color-danger-600: #d63a3b;
-    --color-danger-700: #b12929;
-    --color-danger-800: #8f2020;
-    --color-danger-900: #741c1c;
+    /* — Sky (pastel blue — tag chips, subtle highlights) — */
+    --color-sky-50: #f1f6fb;
+    --color-sky-100: #e4edf7;
+    --color-sky-200: #c3d5ea;
+    --color-sky-300: #9db9d9;
+    --color-sky-400: #6f94bd;
 
-    /* — Warning (#F66B0E) — */
-    --color-warning-50: #fff7ed;
-    --color-warning-100: #ffedd5;
-    --color-warning-200: #fed7aa;
-    --color-warning-300: #fdba74;
-    --color-warning-400: #fb923c;
-    --color-warning-500: #f66b0e;
-    --color-warning-600: #d9560b;
-    --color-warning-700: #b2440a;
-    --color-warning-800: #8a350a;
-    --color-warning-900: #6b2808;
+    /* — Sage (published / success) — */
+    --color-sage-50: #f1f6f1;
+    --color-sage-100: #dceadb;
+    --color-sage-200: #b8d3b8;
+    --color-sage-500: #437a4a;
+    --color-sage-700: #284a2e;
 
-    /* — Elevation (ink-tinted, one-direction) — */
-    --shadow-xs: 0 1px 2px rgb(39 55 77 / 0.05);
-    --shadow-sm: 0 1px 3px rgb(39 55 77 / 0.08), 0 1px 2px rgb(39 55 77 / 0.04);
-    --shadow-md: 0 4px 8px rgb(39 55 77 / 0.08), 0 2px 4px rgb(39 55 77 / 0.04);
-    --shadow-lg: 0 12px 24px rgb(39 55 77 / 0.10), 0 4px 8px rgb(39 55 77 / 0.06);
-    --shadow-xl: 0 24px 48px rgb(39 55 77 / 0.12), 0 8px 16px rgb(39 55 77 / 0.06);
-    --shadow-focus: 0 0 0 3px rgb(16 185 129 / 0.35);
+    /* — Danger (terracotta) — */
+    --color-danger-50: #fbf1ec;
+    --color-danger-100: #f6dcce;
+    --color-danger-200: #ecb39a;
+    --color-danger-300: #de8865;
+    --color-danger-400: #cc6440;
+    --color-danger-500: #b14a2a;
+    --color-danger-600: #913920;
+    --color-danger-700: #722d1c;
+    --color-danger-800: #5c2417;
+    --color-danger-900: #471c12;
+
+    /* — Warning (muted amber) — */
+    --color-warning-50: #fbf5ea;
+    --color-warning-100: #f4e5c4;
+    --color-warning-500: #b98a2b;
+    --color-warning-600: #97701f;
+    --color-warning-700: #755617;
+
+    /* — Elevation (ink-tinted) — */
+    --shadow-xs: 0 1px 2px rgb(22 27 48 / 0.05);
+    --shadow-sm: 0 1px 3px rgb(22 27 48 / 0.07), 0 1px 2px rgb(22 27 48 / 0.04);
+    --shadow-md: 0 4px 8px rgb(22 27 48 / 0.08), 0 2px 4px rgb(22 27 48 / 0.04);
+    --shadow-lg: 0 12px 24px rgb(22 27 48 / 0.10), 0 4px 8px rgb(22 27 48 / 0.06);
+    --shadow-xl: 0 24px 48px rgb(22 27 48 / 0.12), 0 8px 16px rgb(22 27 48 / 0.06);
+    --shadow-focus: 0 0 0 3px rgb(47 125 95 / 0.32);
 
     /* — Radius — */
-    --radius-xs: 0.125rem;
-    --radius-sm: 0.25rem;
-    --radius-md: 0.5rem;
-    --radius-lg: 0.75rem;
-    --radius-xl: 1rem;
+    --radius-xs: 2px;
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
 
     /* — Motion — */
     --ease-brand: cubic-bezier(0.22, 1, 0.36, 1);
-    --duration-quick: 150ms;
-    --duration-base: 250ms;
-    --duration-slow: 450ms;
+    --duration-quick: 120ms;
+    --duration-base: 240ms;
+    --duration-slow: 480ms;
 }
 
-/* — Global hairline polish — */
 @layer base {
     html {
         -webkit-font-smoothing: antialiased;
@@ -110,7 +123,6 @@
         color: var(--color-ink-900);
     }
 
-    /* Interactive elements get the hand cursor unless disabled. */
     button:not(:disabled),
     [role='button']:not([aria-disabled='true']),
     [type='button']:not(:disabled),
@@ -122,30 +134,95 @@
     }
 }
 
-/* — Long-form prose — */
 @layer components {
+    /* Mono path eyebrow: /journal/linux/ */
+    .eyebrow {
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        letter-spacing: 0.06em;
+        color: var(--color-accent-700);
+    }
+
+    /* Mono metadata: 22 April 2026 · 6 min read */
+    .meta {
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        letter-spacing: 0.02em;
+        color: var(--color-ink-400);
+    }
+
+    /* Display heading (Newsreader) */
+    .display {
+        font-family: var(--font-display);
+        font-weight: 500;
+        letter-spacing: -0.02em;
+        line-height: 1.1;
+        color: var(--color-ink-900);
+        text-wrap: pretty;
+    }
+
+    /* Pastel-blue tag chip */
+    .chip {
+        display: inline-flex;
+        align-items: center;
+        border-radius: var(--radius-xs);
+        background: var(--color-sky-100);
+        border: 1px solid var(--color-sky-200);
+        padding: 2px 8px;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        letter-spacing: 0.02em;
+        color: var(--color-ink-700);
+        transition: border-color var(--duration-quick) var(--ease-brand), color var(--duration-quick) var(--ease-brand);
+    }
+    .chip:hover {
+        border-color: var(--color-ink-300);
+        color: var(--color-ink-900);
+    }
+
+    /* Underline-rise link (public site) */
+    .link-rise {
+        color: var(--color-accent-700);
+        text-decoration: none;
+        background-image: linear-gradient(currentColor, currentColor);
+        background-size: 0% 1px;
+        background-repeat: no-repeat;
+        background-position: 0 100%;
+        transition: background-size var(--duration-quick) var(--ease-brand), color var(--duration-quick) var(--ease-brand);
+    }
+    .link-rise:hover {
+        color: var(--color-accent-800);
+        background-size: 100% 1px;
+    }
+
+    /* — Long-form prose — */
     .prose-brand {
-        @apply prose prose-lg max-w-none font-serif
-            prose-headings:font-sans prose-headings:text-ink-900
+        @apply prose max-w-none font-serif text-ink-700
+            prose-headings:font-display prose-headings:font-medium prose-headings:tracking-tight prose-headings:text-ink-900
             prose-a:text-accent-700 prose-a:no-underline hover:prose-a:underline
             prose-strong:text-ink-900
-            prose-code:bg-ink-50 prose-code:text-ink-800 prose-code:px-1.5
-            prose-code:py-0.5 prose-code:rounded prose-code:font-normal
+            prose-code:bg-surface-50 prose-code:text-ink-900 prose-code:px-1.5
+            prose-code:py-0.5 prose-code:rounded-xs prose-code:font-normal
             prose-code:before:content-none prose-code:after:content-none
-            prose-pre:bg-ink-900 prose-pre:text-ink-50 prose-pre:rounded-lg
-            prose-blockquote:border-l-accent-500 prose-blockquote:text-ink-700
-            prose-blockquote:not-italic prose-blockquote:font-serif;
+            prose-pre:bg-ink-900 prose-pre:text-ink-100 prose-pre:rounded-md
+            prose-blockquote:border-l-4 prose-blockquote:border-l-accent-500 prose-blockquote:text-ink-900
+            prose-blockquote:font-display prose-blockquote:italic prose-blockquote:font-normal;
+        font-size: 1.125rem;
+        line-height: 1.7;
     }
 
-    .dark .prose-brand {
-        @apply prose-invert
-            prose-headings:text-ink-50
-            prose-a:text-accent-400
-            prose-strong:text-ink-50
-            prose-code:bg-ink-800 prose-code:text-ink-100;
-    }
+    .prose-brand h2 { font-size: 1.875rem; line-height: 1.2; margin-top: 2em; margin-bottom: 0.8em; }
+    .prose-brand h3 { font-size: 1.5rem; line-height: 1.25; }
+    .prose-brand p { text-wrap: pretty; }
 
-    /* Inline <code> gets the chip treatment. <code> inside <pre> must not. */
+    .prose-brand blockquote {
+        font-size: 1.5rem;
+        line-height: 1.35;
+        padding-left: 1rem;
+    }
+    .prose-brand blockquote p:first-of-type::before,
+    .prose-brand blockquote p:last-of-type::after { content: none; }
+
     .prose-brand pre code,
     .prose-brand pre code::before,
     .prose-brand pre code::after {
@@ -157,162 +234,90 @@
         font-size: inherit;
     }
 
-    /* Polish <pre>: breathable padding, horizontal scroll, mono font, tight line-height. */
     .prose-brand pre {
-        padding: 1.25rem 1.5rem;
+        padding: 1rem 1.5rem;
         overflow-x: auto;
         font-family: var(--font-mono);
-        font-size: 0.9em;
-        line-height: 1.65;
+        font-size: 0.875rem;
+        line-height: 1.6;
         tab-size: 2;
+    }
+
+    /* Section-end mark (double danda) */
+    .prose-brand .section-end {
+        text-align: center;
+        font-family: var(--font-deva);
+        font-size: 1.5rem;
+        color: var(--color-ink-300);
+        margin-top: 3rem;
     }
 }
 
-/* — Ghost/Koenig content cards (mobiledoc output) — */
+/* — Figures: caption sits close under the image, mono — */
 @layer components {
-    .prose-brand figure {
+    .prose-brand figure,
+    .prose-brand .kg-image-card {
         display: block;
-        margin: 1.5em auto;
+        margin: 1.8em 0;
     }
 
     .prose-brand figure img {
+        margin: 0;
+        border-bottom: 1px solid var(--color-ink-100);
         vertical-align: top;
-        margin: 0 auto;
     }
 
     .prose-brand figcaption {
-        text-align: center;
+        text-align: left;
         font-family: var(--font-mono);
         font-size: 0.75rem;
-        color: var(--color-ink-500);
-        margin-top: 0.5em;
-    }
-
-    .dark .prose-brand figcaption {
+        letter-spacing: 0.02em;
+        line-height: 1.5;
         color: var(--color-ink-400);
+        margin-top: 0.5rem;
     }
 
-    .prose-brand blockquote {
-        font-size: 1.25rem;
-        line-height: 1.35;
-    }
-
-    .kg-width-wide {
-        max-width: 1040px;
-        margin-left: auto;
-        margin-right: auto;
-    }
-
-    .kg-width-full {
-        max-width: none;
-    }
-
-    .kg-image-card {
-        margin: 1.5em 0;
-    }
-
-    .kg-image-card img {
-        margin: 0 auto;
-    }
-
-    .kg-embed-card {
-        display: flex;
-        justify-content: center;
-        margin: 1.5em 0;
-    }
-
-    .kg-embed-card iframe {
-        width: 100%;
-    }
-
-    .kg-gallery-container {
-        display: flex;
-        flex-direction: column;
-        gap: 0.75em;
-        margin: 1.5em 0;
-    }
-
-    .kg-gallery-row {
-        display: flex;
-        gap: 0.75em;
-    }
-
-    .kg-gallery-row img {
-        flex: 1;
-        height: auto;
-        object-fit: cover;
-    }
-
-    .kg-gallery-image img {
-        width: 100%;
-        height: auto;
-    }
+    .kg-width-wide { max-width: 1040px; margin-left: auto; margin-right: auto; }
+    .kg-width-full { max-width: none; }
+    .kg-image-card img { margin: 0 auto; }
+    .kg-embed-card { display: flex; justify-content: center; margin: 1.5em 0; }
+    .kg-embed-card iframe { width: 100%; }
+    .kg-gallery-container { display: flex; flex-direction: column; gap: 0.75em; margin: 1.5em 0; }
+    .kg-gallery-row { display: flex; gap: 0.75em; }
+    .kg-gallery-row img { flex: 1; height: auto; object-fit: cover; }
+    .kg-gallery-image img { width: 100%; height: auto; }
 
     .kg-bookmark-card {
-        border: 1px solid var(--color-surface-200);
+        border: 1px solid var(--color-ink-100);
         border-radius: var(--radius-md);
         overflow: hidden;
         margin: 1.5em 0;
         background-color: white;
     }
-
-    .dark .kg-bookmark-card {
-        border-color: var(--color-ink-700);
-        background-color: var(--color-ink-900);
-    }
-
-    .kg-bookmark-card a {
-        display: flex;
-        text-decoration: none;
-        color: inherit;
-    }
-
-    .kg-bookmark-content {
-        padding: 1rem;
-        flex: 1;
-    }
-
-    .kg-bookmark-title {
-        font-weight: 600;
-        color: var(--color-ink-900);
-    }
-
-    .dark .kg-bookmark-title {
-        color: var(--color-ink-50);
-    }
-
-    .kg-bookmark-description {
-        margin-top: 0.5rem;
-        font-size: 0.875rem;
-        color: var(--color-ink-500);
-    }
-
-    .kg-bookmark-metadata {
-        margin-top: 0.5rem;
-        font-size: 0.75rem;
-        color: var(--color-ink-400);
-    }
-
-    .kg-bookmark-thumbnail {
-        width: 200px;
-    }
-
-    .kg-bookmark-thumbnail img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
+    .kg-bookmark-card a { display: flex; text-decoration: none; color: inherit; }
+    .kg-bookmark-content { padding: 1rem; flex: 1; }
+    .kg-bookmark-title { font-family: var(--font-display); font-size: 1.125rem; color: var(--color-ink-900); }
+    .kg-bookmark-description { margin-top: 0.5rem; font-size: 0.875rem; color: var(--color-ink-500); }
+    .kg-bookmark-metadata { margin-top: 0.5rem; font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-ink-400); }
+    .kg-bookmark-thumbnail { width: 200px; }
+    .kg-bookmark-thumbnail img { width: 100%; height: 100%; object-fit: cover; }
 }
 
-/* — Reading progress bar — */
+/* — Reading progress bar: 2px, verdigris, sits just below the sticky header — */
 @layer components {
     .reading-progress {
         position: fixed;
-        top: 0;
+        top: 57px; /* 56px header + 1px hairline */
         left: 0;
+        width: 100%;
         height: 2px;
-        background-color: var(--color-accent-500);
         z-index: 50;
-        transition: width var(--duration-quick) linear;
+        pointer-events: none;
+    }
+    .reading-progress-fill {
+        height: 100%;
+        width: 0%;
+        background-color: var(--color-accent-500);
+        transition: width 100ms linear;
     }
 }

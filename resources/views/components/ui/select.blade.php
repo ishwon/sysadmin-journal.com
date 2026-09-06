@@ -12,28 +12,22 @@
     $id = $attributes->get('id') ?? $name;
     $hasError = filled($error);
     $classes = collect([
-        'w-full appearance-none rounded-md border bg-white px-3 py-2 pr-10 text-sm text-ink-900',
-        'transition-colors duration-[var(--duration-quick)]',
-        'focus:outline-none',
-        'disabled:bg-surface-100 disabled:text-ink-400 disabled:cursor-not-allowed',
-        'dark:bg-ink-900 dark:text-ink-50',
+        'w-full appearance-none rounded-sm border bg-white px-3 py-2 pr-10 text-sm text-ink-900',
+        'transition-colors duration-[var(--duration-quick)] focus:outline-none',
+        'disabled:bg-surface-50 disabled:text-ink-400 disabled:cursor-not-allowed',
         $hasError
-            ? 'border-danger-500 focus:border-danger-500 focus:ring-4 focus:ring-danger-500/20'
-            : 'border-ink-200 focus:border-accent-500 focus:ring-4 focus:ring-accent-500/20 dark:border-ink-700',
+            ? 'border-danger-500 focus:border-danger-500 focus:shadow-[0_0_0_3px_rgb(177_74_42_/_0.32)]'
+            : 'border-ink-200 focus:border-accent-500 focus:shadow-[var(--shadow-focus)]',
     ])->implode(' ');
 @endphp
 
 <div>
     @if ($label)
-        <label for="{{ $id }}" class="block text-sm font-medium text-ink-800 dark:text-ink-100 mb-1">
-            {{ $label }}
-        </label>
+        <label for="{{ $id }}" class="block text-[13px] font-medium text-ink-900 mb-1.5">{{ $label }}</label>
     @endif
     <div class="relative">
         <select name="{{ $name }}" id="{{ $id }}" {{ $attributes->class($classes) }}>
-            @if ($placeholder)
-                <option value="">{{ $placeholder }}</option>
-            @endif
+            @if ($placeholder)<option value="">{{ $placeholder }}</option>@endif
             @foreach ($options as $value => $label)
                 <option value="{{ $value }}" @selected($selected == $value)>{{ $label }}</option>
             @endforeach
@@ -44,8 +38,8 @@
         </svg>
     </div>
     @if ($hasError)
-        <p class="mt-1 text-xs text-danger-600">{{ $error }}</p>
+        <p class="mt-1.5 text-xs text-danger-600">{{ $error }}</p>
     @elseif ($hint)
-        <p class="mt-1 text-xs text-ink-500 dark:text-ink-400">{{ $hint }}</p>
+        <p class="mt-1.5 font-mono text-[11px] text-ink-400">{{ $hint }}</p>
     @endif
 </div>

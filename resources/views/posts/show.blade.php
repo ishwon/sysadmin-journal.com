@@ -1,9 +1,5 @@
 @extends('layouts.app')
 
-@push('styles')
-<style>.reading-progress-fill { height: 100%; background-color: var(--color-accent-500); width: 0%; transition: width 100ms linear; }</style>
-@endpush
-
 @section('content')
 <div class="reading-progress" aria-hidden="true" x-data="{
     update() {
@@ -18,60 +14,55 @@
     <div class="reading-progress-fill" x-ref="fill"></div>
 </div>
 
-<article class="relative py-12 md:py-16 bg-white dark:bg-ink-950">
-    <div class="relative px-4 sm:px-6 lg:px-8">
-        <header class="max-w-[68ch] mx-auto">
-            @if ($post->primaryTag())
-                <a href="/tag/{{ $post->primaryTag()->slug }}" class="inline-flex items-center gap-1.5 text-xs uppercase tracking-wider font-semibold text-accent-700 dark:text-accent-400 hover:text-accent-600 transition-colors">
-                    <span class="h-1.5 w-1.5 rounded-full bg-accent-500"></span>
-                    {{ $post->primaryTag()->name }}
-                </a>
-            @endif
-            <h1 class="mt-3 text-3xl md:text-5xl font-extrabold tracking-tight text-ink-900 dark:text-ink-50 leading-tight">{{ $post->title }}</h1>
-            @if ($post->excerpt)
-                <p class="mt-5 font-serif text-xl text-ink-600 dark:text-ink-300 leading-relaxed [&_a]:text-accent-700 hover:[&_a]:underline dark:[&_a]:text-accent-400">{!! $post->excerpt !!}</p>
-            @endif
-
-            <div class="mt-8 flex items-center gap-3">
-                @if ($post->primaryAuthor())
-                    <a href="/author/{{ $post->primaryAuthor()->slug }}" class="shrink-0">
-                        <span class="sr-only">{{ $post->primaryAuthor()->name }}</span>
-                        @if ($post->primaryAuthor()->profile_image)
-                            <img class="h-10 w-10 rounded-full ring-2 ring-white dark:ring-ink-900" src="{{ $post->primaryAuthor()->profile_image }}" alt="">
-                        @else
-                            <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-ink-800 text-white text-sm font-semibold">
-                                {{ Str::upper(Str::substr($post->primaryAuthor()->name, 0, 2)) }}
-                            </span>
-                        @endif
-                    </a>
-                    <div>
-                        <p class="text-sm font-medium text-ink-900 dark:text-ink-100">
-                            <a href="/author/{{ $post->primaryAuthor()->slug }}" class="hover:text-accent-700 dark:hover:text-accent-400 transition-colors">{{ $post->primaryAuthor()->name }}</a>
-                        </p>
-                        <div class="flex gap-1.5 text-xs text-ink-500 dark:text-ink-400">
-                            <time datetime="{{ $post->published_at?->format('Y-m-d') }}">{{ $post->published_at?->format('d F Y') }}</time>
-                            <span aria-hidden="true">·</span>
-                            <span>{{ $post->reading_time }} min read</span>
-                        </div>
-                    </div>
-                @endif
-            </div>
-        </header>
-
-        @if ($post->feature_image)
-            <figure class="mt-10 max-w-4xl mx-auto">
-                <img class="w-full rounded-lg" src="{{ $post->feature_image }}" alt="{{ $post->feature_image_alt }}" loading="eager">
-                @if ($post->feature_image_caption)
-                    <figcaption class="mt-3 text-center text-xs font-mono text-ink-500 dark:text-ink-400">{!! $post->feature_image_caption !!}</figcaption>
-                @endif
-            </figure>
+<article class="px-6 pt-16 pb-24">
+    <header class="max-w-[68ch] mx-auto text-lg">
+        <p class="eyebrow">
+            <a href="/" class="link-rise">/journal/</a>@if ($post->primaryTag())<a href="/tag/{{ $post->primaryTag()->slug }}" class="link-rise">{{ $post->primaryTag()->slug }}/</a>@endif
+        </p>
+        <h1 class="display text-4xl md:text-[52px] md:leading-[1.08] mt-4">{{ $post->title }}</h1>
+        @if ($post->excerpt)
+            <p class="mt-5 font-display italic text-[22px] leading-snug text-ink-500 text-pretty [&_a]:text-accent-700 hover:[&_a]:underline">{!! $post->excerpt !!}</p>
         @endif
-
-        <div id="post-body" class="prose-brand mt-10 max-w-[68ch] mx-auto">
-            {!! $post->html !!}
+        <div class="mt-7 pt-4 border-t border-ink-100 flex items-center gap-3 meta">
+            @if ($post->primaryAuthor())
+                <a href="/author/{{ $post->primaryAuthor()->slug }}" class="shrink-0">
+                    <span class="sr-only">{{ $post->primaryAuthor()->name }}</span>
+                    @if ($post->primaryAuthor()->profile_image)
+                        <img class="h-7 w-7 rounded-full" src="{{ $post->primaryAuthor()->profile_image }}" alt="">
+                    @else
+                        <span class="inline-flex h-7 w-7 items-center justify-center rounded-full bg-ink-800 text-white font-display text-xs">{{ Str::upper(Str::substr($post->primaryAuthor()->name, 0, 2)) }}</span>
+                    @endif
+                </a>
+                <a href="/author/{{ $post->primaryAuthor()->slug }}" class="text-ink-900 hover:text-accent-700 transition-colors">{{ $post->primaryAuthor()->name }}</a>
+                <span aria-hidden="true">·</span>
+            @endif
+            <time datetime="{{ $post->published_at?->format('Y-m-d') }}">{{ $post->published_at?->format('j F Y') }}</time>
+            <span aria-hidden="true">·</span>
+            <span>{{ $post->reading_time }} min read</span>
         </div>
+    </header>
 
-        @include('components.post-gallery', ['post' => $post])
+    @if ($post->feature_image)
+        <figure class="mt-12 max-w-4xl mx-auto">
+            <img class="w-full border-b border-ink-100" src="{{ $post->feature_image }}" alt="{{ $post->feature_image_alt }}" loading="eager">
+            @if ($post->feature_image_caption)
+                <figcaption class="mt-2.5 meta leading-relaxed">{!! $post->feature_image_caption !!}</figcaption>
+            @endif
+        </figure>
+    @endif
+
+    <div id="post-body" class="prose-brand mt-12 max-w-[68ch] mx-auto">
+        {!! $post->html !!}
+        <p class="section-end" aria-hidden="true">॥</p>
     </div>
+
+    @include('components.post-gallery', ['post' => $post])
+
+    @isset($previous, $next)
+        <footer class="max-w-[68ch] mx-auto mt-12 pt-6 border-t border-ink-100 flex justify-between gap-6 meta">
+            @if ($previous)<a href="/{{ $previous->slug }}" class="link-rise">← {{ $previous->title }}</a>@else<span></span>@endif
+            @if ($next)<a href="/{{ $next->slug }}" class="link-rise text-right">{{ $next->title }} →</a>@endif
+        </footer>
+    @endisset
 </article>
 @endsection
