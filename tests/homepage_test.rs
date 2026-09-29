@@ -44,3 +44,17 @@ async fn the_dashboard_requires_authentication() {
         .assert_ok()
         .assert_see("/recent-posts/");
 }
+
+#[tokio::test]
+async fn the_media_library_creates_its_root_directory_on_first_visit() {
+    let mut app = TestApp::new().await;
+    let images_dir = app.dir.path().join("media/images");
+    std::fs::remove_dir_all(&images_dir).unwrap();
+    app.acting_as_new_user().await;
+    app.get("/dashboard/media")
+        .await
+        .assert_ok()
+        .assert_see("This folder is empty");
+    assert!(images_dir.is_dir());
+    assert_eq!(app.get("/dashboard/media?path=missing").await.status, 404);
+}

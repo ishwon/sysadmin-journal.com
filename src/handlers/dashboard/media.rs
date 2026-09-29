@@ -92,6 +92,10 @@ fn extension_of(name: &str) -> String {
 pub async fn index(ctx: Ctx) -> Result<Response, AppError> {
     let current = sanitize_path(ctx.query_value("path"));
     let dir = full_dir(&ctx, &current);
+    if current.is_empty() {
+        // The media root is not checked in; create it on first visit.
+        std::fs::create_dir_all(&dir)?;
+    }
     if !dir.is_dir() {
         return Err(AppError::NotFound);
     }

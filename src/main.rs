@@ -81,6 +81,7 @@ async fn main() -> Result<()> {
         }
         Command::Serve => {
             db::migrate(&db).await?;
+            std::fs::create_dir_all(config.media_dir.join("images"))?;
             let addr = format!("{}:{}", config.host, config.port);
             let state = app::AppState::new(db, config);
             let app = router::build(state).await?;
