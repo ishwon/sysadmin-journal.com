@@ -62,7 +62,7 @@
                     </span>
                 </button>
             {% endset %}
-            {% call ui.dropdown(trigger=account_trigger, align="left", width="56") %}
+            {% call ui.dropdown(trigger=account_trigger, align="left", width="56", direction="up", class="block") %}
                 <div class="px-4 py-2 border-b border-ink-100">
                     <p class="font-mono text-[11px] text-ink-400">signed in as</p>
                     <p class="text-sm text-ink-900 truncate">{{ auth_user.email if auth_user else "" }}</p>
