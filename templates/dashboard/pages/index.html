@@ -1,0 +1,37 @@
+{% extends "layouts/dashboard.html" %}
+{% import "components/ui.html" as ui %}
+
+{% block actions %}
+{% call ui.button(href="/dashboard/pages/create", variant="primary", size="sm") %}New page{% endcall %}
+{% endblock %}
+
+{% block content %}
+{% if pages.has_pages %}{% set footer = ui.links(pages) %}{% else %}{% set footer = none %}{% endif %}
+{% call ui.table(columns=["title", "status", "updated", ""], footer=footer) %}
+    {% for page in pages.data %}
+        <tr>
+            <td>
+                <a href="/dashboard/pages/{{ page.id }}/edit" class="font-display text-lg text-ink-900 hover:text-accent-700 transition-colors">{{ page.title }}</a>
+                <p class="meta mt-0.5">/{{ page.slug }}</p>
+            </td>
+            <td>{% call ui.badge(tone=("success" if page.status == "published" else "neutral")) %}{{ page.status }}{% endcall %}</td>
+            <td class="meta whitespace-nowrap">{{ page.updated_at|date("j M Y") }}</td>
+            <td class="text-right whitespace-nowrap meta">
+                <a href="/dashboard/pages/{{ page.id }}/edit" class="link-rise">edit</a>
+                <span class="text-ink-200"> · </span>
+                <a href="/{{ page.slug }}" target="_blank" class="link-rise">view</a>
+                <span class="text-ink-200"> · </span>
+                <form method="POST" action="/dashboard/pages/{{ page.id }}" onsubmit="return confirm('Delete this page?')" class="inline">
+                    {{ csrf_field() }} {{ method_field("DELETE") }}
+                    <button type="submit" class="text-danger-500 hover:text-danger-700 font-mono">delete</button>
+                </form>
+            </td>
+        </tr>
+    {% else %}
+        <tr><td colspan="4" class="py-10">
+            {% set action %}{% call ui.button(href="/dashboard/pages/create", variant="primary") %}Create page{% endcall %}{% endset %}
+            {{ ui.empty_state(title="No pages yet", description="Pages are static content (About, Contact, etc.) not part of the chronological feed.", action=action) }}
+        </td></tr>
+    {% endfor %}
+{% endcall %}
+{% endblock %}

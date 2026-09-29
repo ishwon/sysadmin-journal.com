@@ -1,0 +1,22 @@
+{% extends "layouts/app.html" %}
+
+{% block content %}
+<div class="max-w-[1120px] mx-auto px-6 pt-16 pb-24">
+    <header class="pb-6 border-b border-ink-100">
+        <p class="eyebrow">/tag/{{ tag.slug }}/</p>
+        <h1 class="display text-5xl mt-2">{{ tag.name }}</h1>
+        <p class="meta mt-3">{{ posts.total }} {{ "post"|plural(posts.total) }}</p>
+        {% if tag.description %}
+            <p class="mt-3 font-serif text-lg text-ink-500 max-w-prose text-pretty">{{ tag.description }}</p>
+        {% endif %}
+    </header>
+
+    <div class="grid gap-x-12 sm:grid-cols-2 lg:grid-cols-3">
+        {% for post in posts.data %}
+            {% include "components/post-card.html" %}
+        {% endfor %}
+    </div>
+
+    {% include "components/pagination.html" %}
+</div>
+{% endblock %}

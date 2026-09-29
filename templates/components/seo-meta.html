@@ -1,0 +1,45 @@
+{%- set seo_title = seo_title|default(app_name, true) -%}
+{%- set seo_description = seo_description|default("Thoughts, ideas and stories", true) -%}
+{%- set seo_image = seo_image|default(none) -%}
+{%- set seo_url = seo_url|default(current_url, true) -%}
+{%- set seo_type = seo_type|default("website", true) -%}
+{%- set twitter_title = twitter_title|default(seo_title, true) -%}
+{%- set twitter_description = twitter_description|default(seo_description, true) -%}
+{%- set twitter_image = twitter_image|default(seo_image, true) -%}
+{%- set canonical_url = canonical_url|default(seo_url, true) -%}
+
+<title>{{ seo_title }}</title>
+<meta name="description" content="{{ seo_description }}">
+<link rel="canonical" href="{{ canonical_url }}">
+
+<meta property="og:site_name" content="SysAdmin Journal">
+<meta property="og:type" content="{{ seo_type }}">
+<meta property="og:title" content="{{ seo_title }}">
+<meta property="og:description" content="{{ seo_description }}">
+<meta property="og:url" content="{{ seo_url }}">
+{% if seo_image %}
+<meta property="og:image" content="{{ seo_image|url }}">
+{% endif %}
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{ twitter_title }}">
+<meta name="twitter:description" content="{{ twitter_description }}">
+{% if twitter_image %}
+<meta name="twitter:image" content="{{ twitter_image|url }}">
+{% endif %}
+
+{% if post is defined and post and post.type == "post" %}
+{% set json_ld = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": post.title,
+    "description": post.plain_excerpt,
+    "url": url("/" ~ post.slug),
+    "datePublished": (post.published_at|date("c") if post.published_at else none),
+    "dateModified": (post.updated_at|date("c") if post.updated_at else none),
+    "publisher": {"@type": "Organization", "name": "SysAdmin Journal"},
+    "image": (post.feature_image|url if post.feature_image else none),
+    "author": ({"@type": "Person", "name": post.primary_author.name} if post.primary_author else none)
+} %}
+<script type="application/ld+json">{{ json_ld|tojson(indent=4) }}</script>
+{% endif %}

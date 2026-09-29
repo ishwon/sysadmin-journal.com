@@ -1,0 +1,51 @@
+[package]
+name = "sysadmin-journal"
+version = "2.0.0"
+edition = "2024"
+description = "SysAdmin Journal — blog and backoffice, written in Rust"
+license = "MIT"
+default-run = "sysadmin-journal"
+
+[[bin]]
+name = "sysadmin-journal"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = "1"
+axum = { version = "0.8", features = ["multipart", "macros", "form", "json", "query"] }
+base64 = "0.22"
+bcrypt = "0.17"
+chrono = { version = "0.4", features = ["serde"] }
+cookie = { version = "0.18", features = ["key-expansion"] }
+clap = { version = "4", features = ["derive"] }
+dotenvy = "0.15"
+form_urlencoded = "1"
+html-escape = "0.2"
+http-body-util = "0.1"
+include_dir = "0.7"
+mime_guess = "2"
+minijinja = { version = "2", features = ["loader", "builtins", "json", "urlencode"] }
+pulldown-cmark = { version = "0.13", default-features = false, features = ["html"] }
+rand = "0.9"
+regex = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+slug = "0.1"
+sqlx = { version = "0.8", features = ["runtime-tokio", "sqlite", "chrono", "migrate"] }
+time = "0.3"
+tokio = { version = "1", features = ["full"] }
+tower = { version = "0.5", features = ["util"] }
+tower-cookies = { version = "0.11", features = ["signed"] }
+tower-http = { version = "0.6", features = ["fs", "trace", "set-header"] }
+tower-sessions = "0.14"
+tower-sessions-sqlx-store = { version = "0.15", features = ["sqlite"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+walkdir = "2"
+
+[dev-dependencies]
+tempfile = "3"
+
+[profile.release]
+lto = "thin"
+codegen-units = 1

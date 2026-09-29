@@ -1,0 +1,477 @@
+{#- UI component macros. Each mirrors the Blade component of the same name. -#}
+
+{% macro button(variant="primary", size="md", href=none, type="button", loading=false, class="", attrs="") %}
+{% set variants = {
+    "primary": "bg-accent-600 text-white hover:bg-accent-700 disabled:bg-accent-300 focus-visible:shadow-[var(--shadow-focus)]",
+    "secondary": "bg-white text-ink-900 border border-ink-200 hover:bg-surface-50 hover:border-ink-300 disabled:text-ink-400 disabled:bg-white focus-visible:shadow-[var(--shadow-focus)]",
+    "ghost": "text-ink-700 hover:bg-surface-50 hover:text-ink-900 disabled:text-ink-400 focus-visible:shadow-[var(--shadow-focus)]",
+    "danger": "bg-danger-500 text-white hover:bg-danger-600 disabled:bg-danger-300 focus-visible:shadow-[0_0_0_3px_rgb(177_74_42_/_0.32)]",
+    "warning": "bg-warning-500 text-white hover:bg-warning-600 focus-visible:shadow-[var(--shadow-focus)]",
+    "ink": "bg-ink-800 text-white hover:bg-ink-900 disabled:bg-ink-400 focus-visible:shadow-[var(--shadow-focus)]"
+} %}
+{% set sizes = {"sm": "h-8 px-3 text-[13px]", "md": "h-10 px-4 text-sm", "lg": "h-12 px-6 text-[15px]"} %}
+{% set classes = "inline-flex items-center justify-center gap-2 font-semibold rounded-sm transition-colors duration-[var(--duration-quick)] ease-[var(--ease-brand)] focus-visible:outline-none disabled:cursor-not-allowed " ~ (variants[variant] or variants.primary) ~ " " ~ (sizes[size] or sizes.md) ~ " " ~ class %}
+{% if href %}
+<a href="{{ href }}" class="{{ classes }}" {{ attrs|safe }}>{{ caller() }}</a>
+{% else %}
+<button type="{{ type }}" {% if loading %}disabled{% endif %} class="{{ classes }}" {{ attrs|safe }}>
+    {% if loading %}
+    <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" /><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" /></svg>
+    {% endif %}
+    {{ caller() }}
+</button>
+{% endif %}
+{% endmacro %}
+
+{% macro badge(tone="neutral", size="md", class="") %}
+{% set tones = {
+    "neutral": "bg-surface-100 text-ink-500",
+    "success": "bg-sage-100 text-sage-700",
+    "warning": "bg-warning-100 text-warning-700",
+    "danger": "bg-danger-100 text-danger-700",
+    "info": "bg-sky-100 text-ink-700 ring-1 ring-inset ring-sky-200",
+    "ink": "bg-ink-800 text-white"
+} %}
+{% set sizes = {"sm": "px-1.5 py-px text-[10px]", "md": "px-2 py-px text-[11px]", "lg": "px-2.5 py-0.5 text-xs"} %}
+<span class="inline-flex items-center gap-1.5 rounded-xs font-mono lowercase tracking-wide {{ tones[tone] or tones.neutral }} {{ sizes[size] or sizes.md }} {{ class }}">{{ caller() }}</span>
+{% endmacro %}
+
+{% macro alert(tone="info", title=none, dismissible=false, class="") %}
+{% set tones = {
+    "success": "border-l-sage-500 bg-sage-50 text-sage-700",
+    "warning": "border-l-warning-500 bg-warning-50 text-warning-700",
+    "danger": "border-l-danger-500 bg-danger-50 text-danger-700",
+    "info": "border-l-ink-400 bg-surface-50 text-ink-800"
+} %}
+<div {% if dismissible %}x-data="{ shown: true }" x-show="shown"{% endif %} class="border-l-4 {{ tones[tone] or tones.info }} rounded-r-sm px-4 py-3 flex items-start gap-3 {{ class }}">
+    <div class="flex-1 text-sm">
+        {% if title %}<h4 class="font-semibold">{{ title }}</h4>{% endif %}
+        <div class="{{ 'mt-1' if title else '' }}">{{ caller() }}</div>
+    </div>
+    {% if dismissible %}
+    <button type="button" @click="shown = false" class="shrink-0 opacity-60 hover:opacity-100 transition-opacity" aria-label="Dismiss">
+        <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M4.28 3.22a.75.75 0 00-1.06 1.06L8.94 10l-5.72 5.72a.75.75 0 101.06 1.06L10 11.06l5.72 5.72a.75.75 0 101.06-1.06L11.06 10l5.72-5.72a.75.75 0 00-1.06-1.06L10 8.94 4.28 3.22z" clip-rule="evenodd" /></svg>
+    </button>
+    {% endif %}
+</div>
+{% endmacro %}
+
+{% macro card(title=none, subtitle=none, padding="md", hoverable=false, class="", actions=none, footer=none) %}
+{% set pads = {"none": "", "sm": "p-4", "md": "p-6", "lg": "p-8"} %}
+<div class="rounded-md bg-white border border-ink-100 {{ 'transition-shadow duration-[var(--duration-base)] hover:shadow-md' if hoverable else '' }} {{ class }}">
+    {% if title or subtitle %}
+    <div class="px-6 py-4 border-b border-ink-100 flex items-center justify-between gap-4">
+        <div>
+            {% if title %}<h3 class="eyebrow">/{{ title|slug }}/</h3>{% endif %}
+            {% if subtitle %}<p class="text-sm text-ink-500 mt-1">{{ subtitle }}</p>{% endif %}
+        </div>
+        {% if actions %}<div class="shrink-0 flex items-center gap-2">{{ actions|safe }}</div>{% endif %}
+    </div>
+    {% endif %}
+    <div class="{{ pads[padding] if padding in pads else pads.md }}">
+        {{ caller() }}
+    </div>
+    {% if footer %}
+    <div class="px-6 py-3 border-t border-ink-100 bg-surface-50 rounded-b-md">
+        {{ footer|safe }}
+    </div>
+    {% endif %}
+</div>
+{% endmacro %}
+
+{% macro input(name, label=none, hint=none, error=none, type="text", value=none, prefix=none, suffix=none, class="", attrs="", id=none, placeholder=none, required=false, disabled=false) %}
+{% set id = id or name %}
+{% set input_classes = "w-full rounded-sm border bg-white px-3 py-2 text-sm text-ink-900 placeholder:text-ink-300 transition-colors duration-[var(--duration-quick)] focus:outline-none disabled:bg-surface-50 disabled:text-ink-400 disabled:cursor-not-allowed "
+    ~ ("border-danger-500 focus:border-danger-500 focus:shadow-[0_0_0_3px_rgb(177_74_42_/_0.32)]" if error else "border-ink-200 focus:border-accent-500 focus:shadow-[var(--shadow-focus)]")
+    ~ (" rounded-l-none" if prefix else "") ~ (" rounded-r-none" if suffix else "") ~ " " ~ class %}
+<div>
+    {% if label %}<label for="{{ id }}" class="block text-[13px] font-medium text-ink-900 mb-1.5">{{ label }}</label>{% endif %}
+    {% if prefix or suffix %}
+    <div class="flex">
+        {% if prefix %}<span class="inline-flex items-center rounded-l-sm border border-r-0 border-ink-200 bg-surface-50 px-3 font-mono text-xs text-ink-500">{{ prefix }}</span>{% endif %}
+        <input type="{{ type }}" name="{{ name }}" id="{{ id }}" {% if value is not none %}value="{{ value }}"{% endif %} {% if placeholder %}placeholder="{{ placeholder }}"{% endif %} {% if required %}required{% endif %} {% if disabled %}disabled{% endif %} class="{{ input_classes }}" {{ attrs|safe }}>
+        {% if suffix %}<span class="inline-flex items-center rounded-r-sm border border-l-0 border-ink-200 bg-surface-50 px-3 font-mono text-xs text-ink-500">{{ suffix }}</span>{% endif %}
+    </div>
+    {% else %}
+    <input type="{{ type }}" name="{{ name }}" id="{{ id }}" {% if value is not none %}value="{{ value }}"{% endif %} {% if placeholder %}placeholder="{{ placeholder }}"{% endif %} {% if required %}required{% endif %} {% if disabled %}disabled{% endif %} class="{{ input_classes }}" {{ attrs|safe }}>
+    {% endif %}
+    {% if error %}
+    <p class="mt-1.5 text-xs text-danger-600">{{ error }}</p>
+    {% elif hint %}
+    <p class="mt-1.5 font-mono text-[11px] text-ink-400">{{ hint }}</p>
+    {% endif %}
+</div>
+{% endmacro %}
+
+{% macro textarea(name, label=none, hint=none, error=none, rows=4, mono=false, value="", class="", attrs="", placeholder=none, id=none) %}
+{% set id = id or name %}
+{% set classes = "w-full rounded-sm border bg-white px-3 py-2 text-sm text-ink-900 placeholder:text-ink-300 transition-colors duration-[var(--duration-quick)] focus:outline-none resize-y disabled:bg-surface-50 disabled:text-ink-400 disabled:cursor-not-allowed "
+    ~ ("font-mono leading-relaxed " if mono else "")
+    ~ ("border-danger-500 focus:border-danger-500 focus:shadow-[0_0_0_3px_rgb(177_74_42_/_0.32)]" if error else "border-ink-200 focus:border-accent-500 focus:shadow-[var(--shadow-focus)]") ~ " " ~ class %}
+<div>
+    {% if label %}<label for="{{ id }}" class="block text-[13px] font-medium text-ink-900 mb-1.5">{{ label }}</label>{% endif %}
+    <textarea name="{{ name }}" id="{{ id }}" rows="{{ rows }}" {% if placeholder %}placeholder="{{ placeholder }}"{% endif %} class="{{ classes }}" {{ attrs|safe }}>{{ value if value is not none else "" }}</textarea>
+    {% if error %}
+    <p class="mt-1.5 text-xs text-danger-600">{{ error }}</p>
+    {% elif hint %}
+    <p class="mt-1.5 font-mono text-[11px] text-ink-400">{{ hint }}</p>
+    {% endif %}
+</div>
+{% endmacro %}
+
+{#- `options` is a list of [value, label] pairs or of objects with id/title. -#}
+{% macro select(name, label=none, hint=none, error=none, options=[], selected=none, placeholder=none, class="", attrs="", id=none) %}
+{% set id = id or name %}
+{% set classes = "w-full appearance-none rounded-sm border bg-white px-3 py-2 pr-10 text-sm text-ink-900 transition-colors duration-[var(--duration-quick)] focus:outline-none disabled:bg-surface-50 disabled:text-ink-400 disabled:cursor-not-allowed "
+    ~ ("border-danger-500 focus:border-danger-500 focus:shadow-[0_0_0_3px_rgb(177_74_42_/_0.32)]" if error else "border-ink-200 focus:border-accent-500 focus:shadow-[var(--shadow-focus)]") ~ " " ~ class %}
+<div>
+    {% if label %}<label for="{{ id }}" class="block text-[13px] font-medium text-ink-900 mb-1.5">{{ label }}</label>{% endif %}
+    <div class="relative">
+        <select name="{{ name }}" id="{{ id }}" class="{{ classes }}" {{ attrs|safe }}>
+            {% if placeholder %}<option value="">{{ placeholder }}</option>{% endif %}
+            {% for opt in options %}
+                {% if opt.id is defined %}
+                    <option value="{{ opt.id }}" {% if selected is not none and (selected|string) == (opt.id|string) %}selected{% endif %}>{{ opt.title }}</option>
+                {% else %}
+                    <option value="{{ opt[0] }}" {% if selected is not none and (selected|string) == (opt[0]|string) %}selected{% endif %}>{{ opt[1] }}</option>
+                {% endif %}
+            {% endfor %}
+        </select>
+        <svg class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.06l3.71-3.83a.75.75 0 111.08 1.04l-4.25 4.38a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+        </svg>
+    </div>
+    {% if error %}
+    <p class="mt-1.5 text-xs text-danger-600">{{ error }}</p>
+    {% elif hint %}
+    <p class="mt-1.5 font-mono text-[11px] text-ink-400">{{ hint }}</p>
+    {% endif %}
+</div>
+{% endmacro %}
+
+{% macro checkbox(name, label=none, value="1", checked=false, hint=none, class="", id=none, attrs="") %}
+{% set id = id or name %}
+<label for="{{ id }}" class="inline-flex items-start gap-2 cursor-pointer">
+    <input type="checkbox" name="{{ name }}" id="{{ id }}" value="{{ value }}" {% if checked %}checked{% endif %}
+        class="mt-0.5 h-4 w-4 rounded-xs border-ink-300 accent-accent-600 focus:shadow-[var(--shadow-focus)] focus:outline-none cursor-pointer {{ class }}" {{ attrs|safe }}>
+    <span class="flex-1">
+        {% if label %}<span class="block text-sm text-ink-900 select-none">{{ label }}</span>{% endif %}
+        {% if hint %}<span class="block font-mono text-[11px] text-ink-400 mt-0.5">{{ hint }}</span>{% endif %}
+    </span>
+</label>
+{% endmacro %}
+
+{% macro radio(name, value, label=none, checked=false, attrs="", id=none) %}
+{% set id = id or (name ~ "_" ~ value) %}
+<label for="{{ id }}" class="inline-flex items-center gap-2 cursor-pointer">
+    <input type="radio" name="{{ name }}" id="{{ id }}" value="{{ value }}" {% if checked %}checked{% endif %}
+        class="h-4 w-4 border-ink-300 accent-accent-600 focus:shadow-[var(--shadow-focus)] focus:outline-none cursor-pointer" {{ attrs|safe }}>
+    {% if label %}<span class="text-sm text-ink-900 select-none">{{ label }}</span>{% endif %}
+</label>
+{% endmacro %}
+
+{% macro nav_item(href="#", active=false, icon=none, count=none) %}
+<a href="{{ href }}" class="group flex items-center gap-3 px-3 py-2 rounded-sm text-sm font-medium transition-colors duration-[var(--duration-quick)] {{ 'bg-ink-800 text-white' if active else 'text-ink-200 hover:bg-ink-800 hover:text-white' }}">
+    {% if icon %}
+    <span class="shrink-0 w-[18px] h-[18px] {{ 'text-accent-300' if active else 'text-ink-400 group-hover:text-ink-200' }}">{{ icon|safe }}</span>
+    {% endif %}
+    <span>{{ caller() }}</span>
+    {% if count is not none %}
+    <span class="ml-auto font-mono text-[11px] text-ink-400">{{ count }}</span>
+    {% endif %}
+</a>
+{% endmacro %}
+
+{% macro stat_card(label, value, change=none, trend=none, class="") %}
+<div class="py-6 pr-6 mr-6 border-r border-ink-100 last:border-r-0 last:mr-0 last:pr-0 {{ class }}">
+    <p class="font-mono text-[11px] lowercase tracking-wider text-ink-400">{{ label }}</p>
+    <p class="mt-2 font-display text-4xl leading-none text-ink-900">{{ value }}</p>
+    {% if change %}
+    <p class="mt-2 font-mono text-[11px] {{ 'text-danger-600' if trend == 'down' else ('text-sage-500' if trend == 'up' else 'text-ink-400') }}">{{ change }}</p>
+    {% endif %}
+</div>
+{% endmacro %}
+
+{% macro table(columns=[], footer=none, class="") %}
+<div class="overflow-x-auto {{ class }}">
+    <table class="w-full text-sm border-collapse">
+        <thead>
+            <tr>
+                {% for column in columns %}
+                <th scope="col" class="py-3 first:pl-0 px-4 text-left font-mono text-[11px] font-medium lowercase tracking-wide text-ink-400 whitespace-nowrap border-b border-ink-100">
+                    {{ column.label if column is mapping else column }}
+                </th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody class="[&_tr]:border-b [&_tr]:border-surface-50 [&_tr:hover]:bg-surface-50 [&_td]:py-3.5 [&_td]:px-4 [&_td:first-child]:pl-0 [&_td:last-child]:pr-0">
+            {{ caller() }}
+        </tbody>
+    </table>
+    {% if footer %}
+    <div class="pt-4 meta">
+        {{ footer|safe }}
+    </div>
+    {% endif %}
+</div>
+{% endmacro %}
+
+{% macro empty_state(title, description=none, action=none, class="") %}
+<div class="flex flex-col items-center justify-center text-center px-6 py-16 border border-dashed border-ink-200 rounded-md {{ class }}">
+    <p class="eyebrow">/empty/</p>
+    <h3 class="mt-2 font-display text-2xl text-ink-900">{{ title }}</h3>
+    {% if description %}
+    <p class="mt-2 font-serif text-base text-ink-500 max-w-sm text-pretty">{{ description }}</p>
+    {% endif %}
+    {% if action %}
+    <div class="mt-6">{{ action|safe }}</div>
+    {% endif %}
+</div>
+{% endmacro %}
+
+{% macro breadcrumbs(items=[]) %}
+<nav class="flex" aria-label="Breadcrumb">
+    <ol class="inline-flex items-center gap-1.5 font-mono text-xs tracking-wide">
+        {% for item in items %}
+        <li class="inline-flex items-center gap-1.5">
+            {% if loop.index0 > 0 %}<span class="text-ink-300" aria-hidden="true">/</span>{% endif %}
+            {% if item.href and not loop.last %}
+            <a href="{{ item.href }}" class="text-ink-400 hover:text-ink-900 transition-colors">{{ item.label }}</a>
+            {% else %}
+            <span class="text-ink-900">{{ item.label }}</span>
+            {% endif %}
+        </li>
+        {% endfor %}
+    </ol>
+</nav>
+{% endmacro %}
+
+{% macro dropdown(trigger, align="right", width="48") %}
+{% set aligns = {"left": "left-0 origin-top-left", "right": "right-0 origin-top-right"} %}
+{% set widths = {"48": "w-48", "56": "w-56", "64": "w-64"} %}
+<div class="relative inline-block" x-data="{ open: false }" @click.outside="open = false" @keydown.escape.window="open = false">
+    <div @click="open = !open">{{ trigger|safe }}</div>
+    <div x-show="open"
+        x-transition:enter="transition ease-[var(--ease-brand)] duration-[var(--duration-quick)]"
+        x-transition:enter-start="opacity-0 -translate-y-1"
+        x-transition:enter-end="opacity-100 translate-y-0"
+        x-transition:leave="transition ease-in duration-100"
+        x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0"
+        x-cloak
+        class="absolute z-40 mt-2 {{ aligns[align] or aligns.right }} {{ widths[width] or widths['48'] }} rounded-md bg-white shadow-lg border border-ink-100 py-1">
+        {{ caller() }}
+    </div>
+</div>
+{% endmacro %}
+
+{% macro dropdown_item(href=none, tone="default", icon=none, type="button", class="") %}
+{% set tones = {"default": "text-ink-700 hover:bg-surface-50 hover:text-ink-900", "danger": "text-danger-600 hover:bg-danger-50"} %}
+{% set classes = "flex items-center gap-2 px-4 py-2 text-sm transition-colors duration-[var(--duration-quick)] " ~ (tones[tone] or tones.default) ~ " " ~ class %}
+{% if href %}
+<a href="{{ href }}" class="{{ classes }}">
+    {% if icon %}<span class="shrink-0 w-4 h-4">{{ icon|safe }}</span>{% endif %}
+    {{ caller() }}
+</a>
+{% else %}
+<button type="{{ type }}" class="{{ classes }} w-full text-left">
+    {% if icon %}<span class="shrink-0 w-4 h-4">{{ icon|safe }}</span>{% endif %}
+    {{ caller() }}
+</button>
+{% endif %}
+{% endmacro %}
+
+{% macro modal(name, title=none, eyebrow=none, size="md", footer=none) %}
+{% set sizes = {"sm": "max-w-md", "md": "max-w-lg", "lg": "max-w-2xl", "xl": "max-w-4xl"} %}
+<div
+    x-data="{ open: false }"
+    x-on:open-modal-{{ name }}.window="open = true"
+    x-on:close-modal-{{ name }}.window="open = false"
+    @keydown.escape.window="open = false"
+    x-cloak>
+    <div x-show="open" x-transition.opacity class="fixed inset-0 bg-ink-950/60 z-40" @click="open = false"></div>
+    <div x-show="open" class="fixed inset-0 z-50 flex items-start justify-center p-4 sm:p-6 overflow-y-auto pointer-events-none">
+        <div
+            x-show="open"
+            x-transition:enter="transition ease-[var(--ease-brand)] duration-[var(--duration-base)]"
+            x-transition:enter-start="opacity-0 translate-y-2"
+            x-transition:enter-end="opacity-100 translate-y-0"
+            x-transition:leave="transition ease-in duration-[var(--duration-quick)]"
+            x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0"
+            class="pointer-events-auto mt-24 w-full {{ sizes[size] or sizes.md }} rounded-lg bg-white shadow-xl border border-ink-100 p-6">
+            {% if title %}
+            <div class="flex items-start justify-between gap-4 mb-5">
+                <div>
+                    {% if eyebrow %}<p class="eyebrow">{{ eyebrow }}</p>{% endif %}
+                    <h3 class="display text-[26px] mt-1.5">{{ title }}</h3>
+                </div>
+                <button type="button" @click="open = false" class="text-ink-400 hover:text-ink-900 transition-colors" aria-label="Close">
+                    <svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M4.28 3.22a.75.75 0 00-1.06 1.06L8.94 10l-5.72 5.72a.75.75 0 101.06 1.06L10 11.06l5.72 5.72a.75.75 0 101.06-1.06L11.06 10l5.72-5.72a.75.75 0 00-1.06-1.06L10 8.94 4.28 3.22z" clip-rule="evenodd"/></svg>
+                </button>
+            </div>
+            {% endif %}
+            <div class="text-sm text-ink-700">{{ caller() }}</div>
+            {% if footer %}
+            <div class="mt-5 pt-4 border-t border-ink-100 flex items-center justify-end gap-2">{{ footer|safe }}</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endmacro %}
+
+{#- Static pagination control (brand system). -#}
+{% macro pagination(current=1, total=1) %}
+<nav class="flex items-center justify-between gap-4" aria-label="Pagination">
+    <p class="text-sm text-ink-500 dark:text-ink-400">
+        Page <span class="font-medium text-ink-800 dark:text-ink-100">{{ current }}</span>
+        of <span class="font-medium text-ink-800 dark:text-ink-100">{{ total }}</span>
+    </p>
+    <div class="inline-flex items-center gap-1">
+        <button type="button" {% if current <= 1 %}disabled{% endif %}
+            class="inline-flex h-8 w-8 items-center justify-center rounded-md border border-ink-200 bg-white text-ink-600 hover:bg-surface-100 disabled:opacity-40 disabled:cursor-not-allowed dark:bg-ink-900 dark:border-ink-700 dark:text-ink-300 dark:hover:bg-ink-800">
+            <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 010 1.06L9.06 10l3.73 3.71a.75.75 0 11-1.06 1.06l-4.25-4.24a.75.75 0 010-1.06l4.25-4.24a.75.75 0 011.06 0z" clip-rule="evenodd"/></svg>
+        </button>
+        {% for page in range([1, current - 2]|max, [total, current + 2]|min + 1) %}
+        <button type="button" class="inline-flex h-8 min-w-8 px-2 items-center justify-center rounded-md text-sm font-medium transition-colors {{ 'bg-accent-600 text-white' if page == current else 'text-ink-700 hover:bg-surface-100 dark:text-ink-200 dark:hover:bg-ink-800' }}">
+            {{ page }}
+        </button>
+        {% endfor %}
+        <button type="button" {% if current >= total %}disabled{% endif %}
+            class="inline-flex h-8 w-8 items-center justify-center rounded-md border border-ink-200 bg-white text-ink-600 hover:bg-surface-100 disabled:opacity-40 disabled:cursor-not-allowed dark:bg-ink-900 dark:border-ink-700 dark:text-ink-300 dark:hover:bg-ink-800">
+            <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 010-1.06L10.94 10 7.21 6.29a.75.75 0 111.06-1.06l4.25 4.24a.75.75 0 010 1.06l-4.25 4.24a.75.75 0 01-1.06 0z" clip-rule="evenodd"/></svg>
+        </button>
+    </div>
+</nav>
+{% endmacro %}
+
+{#- Paginator links for dashboard tables (`$items->withQueryString()->links()`). -#}
+{% macro links(page) %}
+<nav role="navigation" aria-label="Pagination Navigation" class="flex items-center justify-between gap-4">
+    <p class="font-mono text-xs text-ink-400">
+        {% if page.total > 0 %}
+        showing <span class="text-ink-900">{{ page.first_item }}</span> to <span class="text-ink-900">{{ page.last_item }}</span> of <span class="text-ink-900">{{ page.total }}</span> results
+        {% else %}
+        no results
+        {% endif %}
+    </p>
+    <div class="inline-flex items-center gap-1 font-mono text-xs">
+        {% if page.prev_url %}
+        <a href="{{ page.prev_url }}" rel="prev" class="inline-flex h-8 px-2.5 items-center rounded-sm border border-ink-200 bg-white text-ink-700 hover:bg-surface-50">« previous</a>
+        {% else %}
+        <span class="inline-flex h-8 px-2.5 items-center rounded-sm border border-ink-100 text-ink-300 cursor-default" aria-disabled="true">« previous</span>
+        {% endif %}
+        {% for link in page.links %}
+            {% if link.url is none %}
+            <span class="inline-flex h-8 min-w-8 px-2 items-center justify-center text-ink-400">…</span>
+            {% elif link.active %}
+            <span aria-current="page" class="inline-flex h-8 min-w-8 px-2 items-center justify-center rounded-sm bg-accent-600 text-white">{{ link.label }}</span>
+            {% else %}
+            <a href="{{ link.url }}" class="inline-flex h-8 min-w-8 px-2 items-center justify-center rounded-sm text-ink-700 hover:bg-surface-50">{{ link.label }}</a>
+            {% endif %}
+        {% endfor %}
+        {% if page.next_url %}
+        <a href="{{ page.next_url }}" rel="next" class="inline-flex h-8 px-2.5 items-center rounded-sm border border-ink-200 bg-white text-ink-700 hover:bg-surface-50">next »</a>
+        {% else %}
+        <span class="inline-flex h-8 px-2.5 items-center rounded-sm border border-ink-100 text-ink-300 cursor-default" aria-disabled="true">next »</span>
+        {% endif %}
+    </div>
+</nav>
+{% endmacro %}
+
+{% macro tabs(tabs=[], default=none) %}
+{% set initial = default or (tabs[0][0] if tabs else "") %}
+<div x-data="{ active: {{ initial|js }} }">
+    <div class="border-b border-surface-200 dark:border-ink-700">
+        <nav class="flex gap-6 -mb-px" aria-label="Tabs">
+            {% for tab in tabs %}
+            <button type="button"
+                @click="active = {{ tab[0]|js }}"
+                :class="active === {{ tab[0]|js }} ? 'border-accent-500 text-accent-700 dark:text-accent-400' : 'border-transparent text-ink-500 hover:text-ink-800 hover:border-ink-300 dark:text-ink-400 dark:hover:text-ink-100'"
+                class="inline-flex items-center gap-2 border-b-2 py-3 px-1 text-sm font-medium transition-colors">
+                {{ tab[1] }}
+            </button>
+            {% endfor %}
+        </nav>
+    </div>
+    <div class="pt-6">
+        {{ caller() }}
+    </div>
+</div>
+{% endmacro %}
+
+{% macro toast(tone="success", title=none, message=none, on=none) %}
+{% set tones = {
+    "success": "bg-white border-accent-500 text-ink-900 dark:bg-ink-900 dark:text-ink-50",
+    "warning": "bg-white border-warning-500 text-ink-900 dark:bg-ink-900 dark:text-ink-50",
+    "danger": "bg-white border-danger-500 text-ink-900 dark:bg-ink-900 dark:text-ink-50",
+    "info": "bg-white border-ink-400 text-ink-900 dark:bg-ink-900 dark:text-ink-50"
+} %}
+{% set icon_tones = {
+    "success": "text-accent-600 bg-accent-50 dark:bg-accent-900/40 dark:text-accent-300",
+    "warning": "text-warning-600 bg-warning-50 dark:bg-warning-900/40 dark:text-warning-300",
+    "danger": "text-danger-600 bg-danger-50 dark:bg-danger-900/40 dark:text-danger-300",
+    "info": "text-ink-500 bg-surface-100 dark:bg-ink-800 dark:text-ink-300"
+} %}
+{% set icons = {
+    "success": '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>',
+    "warning": '<path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625l6.28-10.875zM10 6a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 6zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>',
+    "danger": '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd"/>',
+    "info": '<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z" clip-rule="evenodd"/>'
+} %}
+<div
+    x-data="{ shown: false }"
+    {% if on %}x-on:{{ on }}.window="shown = true; setTimeout(() => shown = false, 4500)"{% endif %}
+    x-show="shown"
+    x-transition:enter="transition ease-out duration-200"
+    x-transition:enter-start="opacity-0 translate-y-2"
+    x-transition:enter-end="opacity-100 translate-y-0"
+    x-transition:leave="transition ease-in duration-150"
+    x-transition:leave-start="opacity-100"
+    x-transition:leave-end="opacity-0"
+    x-cloak
+    class="pointer-events-auto rounded-lg border-l-4 shadow-lg p-4 flex items-start gap-3 min-w-80 max-w-md {{ tones[tone] or tones.info }}">
+    <span class="shrink-0 inline-flex h-8 w-8 items-center justify-center rounded-full {{ icon_tones[tone] or icon_tones.info }}">
+        <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">{{ (icons[tone] or icons.info)|safe }}</svg>
+    </span>
+    <div class="flex-1 text-sm">
+        {% if title %}<p class="font-semibold">{{ title }}</p>{% endif %}
+        {% if message %}<p class="{{ 'mt-0.5' if title else '' }} text-ink-600 dark:text-ink-300">{{ message }}</p>{% endif %}
+    </div>
+    <button type="button" @click="shown = false" class="shrink-0 text-ink-400 hover:text-ink-700 dark:hover:text-ink-100" aria-label="Dismiss">
+        <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M4.28 3.22a.75.75 0 00-1.06 1.06L8.94 10l-5.72 5.72a.75.75 0 101.06 1.06L10 11.06l5.72 5.72a.75.75 0 101.06-1.06L11.06 10l5.72-5.72a.75.75 0 00-1.06-1.06L10 8.94 4.28 3.22z" clip-rule="evenodd"/></svg>
+    </button>
+</div>
+{% endmacro %}
+
+{% macro toggle(name, label=none, hint=none, checked=false, value="1", id=none) %}
+{% set id = id or name %}
+<label for="{{ id }}" class="inline-flex items-start gap-3 cursor-pointer group">
+    <span x-data="{ on: {{ 'true' if checked else 'false' }} }"
+          class="relative inline-flex h-6 w-11 shrink-0 rounded-full transition-colors duration-[var(--duration-quick)] ease-[var(--ease-brand)] focus-within:shadow-[var(--shadow-focus)]"
+          :class="on ? 'bg-accent-500' : 'bg-ink-300 dark:bg-ink-700'">
+        <input type="checkbox" name="{{ name }}" id="{{ id }}" value="{{ value }}" x-model="on" class="sr-only peer" {% if checked %}checked{% endif %}>
+        <span class="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform duration-[var(--duration-quick)] ease-[var(--ease-brand)]"
+              :class="on ? 'translate-x-5' : 'translate-x-0'"></span>
+    </span>
+    {% if label or hint %}
+    <span class="flex-1">
+        {% if label %}<span class="block text-sm font-medium text-ink-800 dark:text-ink-100 select-none">{{ label }}</span>{% endif %}
+        {% if hint %}<span class="block text-xs text-ink-500 dark:text-ink-400 mt-0.5">{{ hint }}</span>{% endif %}
+    </span>
+    {% endif %}
+</label>
+{% endmacro %}
+
+{% macro skeleton(shape="line", width=none, height=none) %}
+{% set shapes = {"line": "h-3 w-full rounded", "heading": "h-5 w-2/3 rounded", "paragraph": "h-3 w-full rounded", "avatar": "h-10 w-10 rounded-full", "thumbnail": "h-24 w-full rounded-md", "button": "h-10 w-24 rounded-md"} %}
+<div class="animate-pulse bg-surface-200 dark:bg-ink-800 {{ shapes[shape] or shapes.line }}" {% if width or height %}style="{% if width %}width: {{ width }};{% endif %}{% if height %} height: {{ height }};{% endif %}"{% endif %}></div>
+{% endmacro %}
+
+{% macro section_header(title, eyebrow=none, description=none) %}
+<header class="max-w-2xl">
+    {% if eyebrow %}<p class="text-xs uppercase tracking-wider font-semibold text-accent-700 dark:text-accent-400">{{ eyebrow }}</p>{% endif %}
+    <h2 class="mt-1 text-2xl font-bold tracking-tight text-ink-900 dark:text-ink-50">{{ title }}</h2>
+    {% if description %}<p class="mt-2 text-ink-600 dark:text-ink-300">{{ description }}</p>{% endif %}
+</header>
+{% endmacro %}
