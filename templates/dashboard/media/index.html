@@ -126,7 +126,7 @@
     <form method="POST" action="/dashboard/media/directory">
         {{ csrf_field() }}
         <input type="hidden" name="current_path" value="{{ current_media_path }}">
-        {{ ui.input(name="name", label="Folder name", placeholder="e.g. 2026", required=true, hint="letters, numbers, hyphens and underscores only", class="font-mono text-xs", attrs='pattern="[a-zA-Z0-9_-]+"') }}
+        {{ ui.input(name="name", label="Folder name", placeholder="e.g. 2026", required=true, hint="letters, numbers, hyphens and underscores only", class="font-mono text-xs", attrs='pattern="[a-zA-Z0-9_\\-]+"') }}
         <div class="mt-5 pt-4 border-t border-ink-100 flex items-center justify-end gap-2">
             {% call ui.button(type="button", variant="secondary", size="sm", attrs='x-on:click="$dispatch(\'close-modal-create-dir\')"') %}Cancel{% endcall %}
             {% call ui.button(type="submit", variant="primary", size="sm") %}Create{% endcall %}

@@ -13,6 +13,7 @@ function hotFile() {
     return {
         name: 'sysadmin-journal-hot-file',
         configureServer(server) {
+            if (existsSync(path)) rmSync(path);
             server.httpServer?.once('listening', () => {
                 const address = server.httpServer.address();
                 const protocol = server.config.server.https ? 'https' : 'http';
@@ -29,10 +30,10 @@ function hotFile() {
     };
 }
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
     plugins: [tailwindcss(), hotFile()],
     publicDir: false,
-    base: '/build/',
+    base: command === 'serve' ? '/' : '/build/',
     build: {
         outDir: 'public/build',
         emptyOutDir: true,
@@ -45,4 +46,4 @@ export default defineConfig({
         origin: 'http://localhost:5173',
         cors: true,
     },
-});
+}));
