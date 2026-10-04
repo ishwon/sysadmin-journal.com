@@ -1,0 +1,60 @@
+{% import "components/ui.html" as ui %}
+{% set format_default = "markdown" if (page and page.markdown) else "html" %}
+<div x-data="{
+    title: {{ old.title|default(page.title, true)|default('', true)|js }},
+    slug: {{ old.slug|default(page.slug, true)|default('', true)|js }},
+    slugManual: {{ (true if old.slug|default(page.slug, true) else false)|js }},
+    contentFormat: {{ old.content_format|default(format_default, true)|js }},
+    async generateSlug() {
+        if (this.slugManual && this.slug) return;
+        const response = await fetch({{ '/dashboard/api/slug-check'|js }}, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content },
+            body: JSON.stringify({ title: this.title, exclude_id: {{ (page.id if page and page.id else '')|js }} })
+        });
+        const data = await response.json();
+        this.slug = data.slug;
+    }
+}">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 space-y-6">
+            {% call ui.card() %}
+                <div class="space-y-4">
+                    {{ ui.input(name="title", label="Title", required=true, attrs='x-model="title" @input.debounce.500ms="generateSlug()"') }}
+                    {{ ui.input(name="slug", label="Slug", required=true, class="font-mono", attrs='x-model="slug" @input="slugManual = true"') }}
+                    <div>
+                        <p class="block text-sm font-medium text-ink-800 dark:text-ink-100 mb-1.5">Content format</p>
+                        <div class="flex gap-4">
+                            {{ ui.radio(name="content_format", value="html", label="HTML", attrs='x-model="contentFormat"') }}
+                            {{ ui.radio(name="content_format", value="markdown", label="Markdown", attrs='x-model="contentFormat"') }}
+                        </div>
+                    </div>
+                    {{ ui.textarea(name="content", label="Content", rows=20, mono=true, value=old.content|default(page.markdown|default(page.html, true), true)|default("", true)) }}
+                    {{ ui.textarea(name="custom_excerpt", label="Custom excerpt", rows=3, value=old.custom_excerpt|default(page.custom_excerpt, true)|default("", true)) }}
+                </div>
+            {% endcall %}
+        </div>
+
+        <div class="space-y-6">
+            {% call ui.card(title="Publish") %}
+                <div class="space-y-4">
+                    {{ ui.select(name="status", label="Status", options=[["draft", "Draft"], ["published", "Published"]], selected=old.status|default(page.status, true)|default("draft", true)) }}
+                    {{ ui.input(name="feature_image", label="Feature image URL", value=old.feature_image|default(page.feature_image, true)|default("", true)) }}
+                    {{ ui.input(name="feature_image_alt", label="Feature image alt text", value=old.feature_image_alt|default(page.feature_image_alt, true)|default("", true)) }}
+                    {{ ui.input(name="feature_image_caption", label="Feature image caption", value=old.feature_image_caption|default(page.feature_image_caption, true)|default("", true)) }}
+                </div>
+            {% endcall %}
+
+            {% call ui.card(title="SEO") %}
+                <div class="space-y-3">
+                    {{ ui.input(name="meta_title", label="Meta title", value=old.meta_title|default(page.meta_title, true)|default("", true)) }}
+                    {{ ui.textarea(name="meta_description", label="Meta description", rows=2, value=old.meta_description|default(page.meta_description, true)|default("", true)) }}
+                </div>
+            {% endcall %}
+
+            {% call ui.button(type="submit", variant="primary", class="w-full") %}
+                {{ "Save changes" if (page and page.id) else "Create page" }}
+            {% endcall %}
+        </div>
+    </div>
+</div>

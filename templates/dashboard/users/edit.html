@@ -1,0 +1,9 @@
+{% extends "layouts/dashboard.html" %}
+
+{% block content %}
+<form method="POST" action="/dashboard/users/{{ user.id }}">
+    {{ csrf_field() }}
+    {{ method_field("PUT") }}
+    {% include "dashboard/users/form.html" %}
+</form>
+{% endblock %}

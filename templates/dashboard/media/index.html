@@ -1,0 +1,151 @@
+{% extends "layouts/dashboard.html" %}
+{% import "components/ui.html" as ui %}
+
+{% block breadcrumbs %}
+{{ ui.breadcrumbs(items=breadcrumbs) }}
+{% endblock %}
+
+{% block page_aside %}
+<div><p class="meta">{{ (images|length) + (pdfs|length) }} files</p></div>
+{% endblock %}
+
+{% block actions %}
+{% call ui.button(type="button", variant="secondary", size="sm", attrs='x-data @click="$dispatch(\'open-modal-create-dir\')"') %}New folder{% endcall %}
+{% call ui.button(type="button", variant="primary", size="sm", attrs='x-data @click="$dispatch(\'open-modal-upload\')"') %}Upload{% endcall %}
+{% endblock %}
+
+{% block content %}
+<div x-data="{
+    lightbox: null,
+    lightboxIndex: 0,
+    images: {{ images|js }},
+    copiedUrl: null,
+    copyPath(text) {
+        navigator.clipboard.writeText(text);
+        this.copiedUrl = text;
+        setTimeout(() => this.copiedUrl = null, 1500);
+    },
+    prevImage() { this.lightboxIndex = (this.lightboxIndex - 1 + this.images.length) % this.images.length; this.lightbox = this.images[this.lightboxIndex].url; },
+    nextImage() { this.lightboxIndex = (this.lightboxIndex + 1) % this.images.length; this.lightbox = this.images[this.lightboxIndex].url; }
+}">
+
+    {# Folders: mono chips #}
+    {% if directories %}
+        <div class="mt-6 flex flex-wrap gap-2">
+            {% for dir in directories %}
+                <div class="group relative">
+                    <a href="/dashboard/media?path={{ ((current_media_path ~ '/' ~ dir) if current_media_path else dir)|urlencode }}"
+                        class="inline-flex items-center gap-2 border border-ink-100 rounded-sm px-3 py-1.5 font-mono text-xs text-ink-700 hover:border-ink-300 hover:text-ink-900 transition-colors">
+                        <svg class="h-3.5 w-3.5 text-ink-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" /></svg>{{ dir }}/
+                    </a>
+                    <form method="POST" action="/dashboard/media/directory" class="absolute -top-2 -right-2 hidden group-hover:block" onsubmit="return confirm('Delete folder \'{{ dir }}\'? It must be empty.')">
+                        {{ csrf_field() }} {{ method_field("DELETE") }}
+                        <input type="hidden" name="current_path" value="{{ current_media_path }}">
+                        <input type="hidden" name="directory" value="{{ dir }}">
+                        <button type="submit" class="h-5 w-5 rounded-full bg-white border border-ink-200 text-danger-500 hover:bg-danger-50 text-[11px] leading-none" title="Delete folder">×</button>
+                    </form>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {# Images #}
+    {% if images %}
+        <div class="mt-8">
+            <h3 class="eyebrow mb-4">/photos/ · {{ images|length }}</h3>
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-x-4 gap-y-6">
+                {% for image in images %}
+                    <figure class="group relative m-0">
+                        <img src="{{ image.url }}" alt="{{ image.name }}" class="w-full aspect-square object-cover rounded-sm border border-ink-100 cursor-pointer" loading="lazy"
+                            @click="lightboxIndex = {{ loop.index0 }}; lightbox = images[{{ loop.index0 }}].url">
+                        <figcaption class="mt-1.5 meta truncate" title="{{ image.name }}">{{ image.name }}<span class="text-ink-300"> · {{ image.size|kb }} KB</span></figcaption>
+                        <div class="absolute top-1.5 right-1.5 hidden group-hover:flex items-center gap-1">
+                            <button @click.stop="copyPath({{ image.url|js }})" class="h-6 px-1.5 rounded-xs font-mono text-[10px] bg-white/90 border border-ink-100 transition-colors" :class="copiedUrl === {{ image.url|js }} ? 'text-accent-700 border-accent-300' : 'text-ink-700 hover:bg-white'" title="Copy path" x-text="copiedUrl === {{ image.url|js }} ? 'copied' : 'copy'"></button>
+                            <form method="POST" action="/dashboard/media/photo" class="inline" onsubmit="return confirm('Delete this photo?')">
+                                {{ csrf_field() }} {{ method_field("DELETE") }}
+                                <input type="hidden" name="current_path" value="{{ current_media_path }}">
+                                <input type="hidden" name="file" value="{{ image.name }}">
+                                <button type="submit" class="h-6 px-1.5 rounded-xs font-mono text-[10px] bg-white/90 border border-ink-100 text-danger-500 hover:bg-danger-50" title="Delete photo">del</button>
+                            </form>
+                        </div>
+                    </figure>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+    {# PDFs #}
+    {% if pdfs %}
+        <div class="mt-10">
+            <h3 class="eyebrow mb-4">/pdfs/ · {{ pdfs|length }}</h3>
+            <div class="divide-y divide-surface-50 border-t border-ink-100">
+                {% for pdf in pdfs %}
+                    <div class="group flex items-center justify-between gap-4 py-3">
+                        <a href="{{ pdf.url }}" target="_blank" class="font-mono text-xs text-ink-900 hover:text-accent-700 truncate">{{ pdf.name }}</a>
+                        <div class="flex items-center gap-4 meta shrink-0">
+                            <span>{{ pdf.size|kb }} KB</span>
+                            <button @click.stop="copyPath({{ pdf.url|js }})" class="link-rise" x-text="copiedUrl === {{ pdf.url|js }} ? 'copied' : 'copy path'"></button>
+                            <form method="POST" action="/dashboard/media/photo" class="inline" onsubmit="return confirm('Delete this file?')">
+                                {{ csrf_field() }} {{ method_field("DELETE") }}
+                                <input type="hidden" name="current_path" value="{{ current_media_path }}">
+                                <input type="hidden" name="file" value="{{ pdf.name }}">
+                                <button type="submit" class="text-danger-500 hover:text-danger-700 font-mono">delete</button>
+                            </form>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+    {% if not directories and not images and not pdfs %}
+        <div class="mt-8">
+            {% set action %}{% call ui.button(type="button", variant="primary", attrs='x-data @click="$dispatch(\'open-modal-upload\')"') %}Upload files{% endcall %}{% endset %}
+            {{ ui.empty_state(title="This folder is empty", description="Upload files or create a sub-folder to get started.", action=action) }}
+        </div>
+    {% endif %}
+
+    {# Lightbox #}
+    <div x-show="lightbox" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-ink-950/95"
+        @keydown.escape.window="lightbox = null"
+        @keydown.left.window="if(lightbox) prevImage()"
+        @keydown.right.window="if(lightbox) nextImage()">
+        <button @click="lightbox = null" class="absolute top-4 right-4 text-white/80 hover:text-white z-10 text-3xl" aria-label="Close">&times;</button>
+        <button @click="prevImage()" class="absolute left-4 text-white/70 hover:text-white z-10 p-2" x-show="images.length > 1" aria-label="Previous">
+            <svg class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg>
+        </button>
+        <button @click="nextImage()" class="absolute right-4 text-white/70 hover:text-white z-10 p-2" x-show="images.length > 1" aria-label="Next">
+            <svg class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
+        </button>
+        <img :src="lightbox" class="max-h-[90vh] max-w-[90vw] object-contain">
+        <div class="absolute bottom-4 text-center text-ink-200 font-mono text-xs tracking-wide" x-text="images[lightboxIndex]?.name"></div>
+    </div>
+</div>
+
+{% call ui.modal(name="create-dir", eyebrow="/new-folder/", title="New folder", size="sm") %}
+    <form method="POST" action="/dashboard/media/directory">
+        {{ csrf_field() }}
+        <input type="hidden" name="current_path" value="{{ current_media_path }}">
+        {{ ui.input(name="name", label="Folder name", placeholder="e.g. 2026", required=true, hint="letters, numbers, hyphens and underscores only", class="font-mono text-xs", attrs='pattern="[a-zA-Z0-9_\\-]+"') }}
+        <div class="mt-5 pt-4 border-t border-ink-100 flex items-center justify-end gap-2">
+            {% call ui.button(type="button", variant="secondary", size="sm", attrs='x-on:click="$dispatch(\'close-modal-create-dir\')"') %}Cancel{% endcall %}
+            {% call ui.button(type="submit", variant="primary", size="sm") %}Create{% endcall %}
+        </div>
+    </form>
+{% endcall %}
+
+{% call ui.modal(name="upload", eyebrow="/upload/", title="Upload files", size="md") %}
+    <form method="POST" action="/dashboard/media/upload" enctype="multipart/form-data">
+        {{ csrf_field() }}
+        <input type="hidden" name="current_path" value="{{ current_media_path }}">
+        <label for="photos" class="block text-[13px] font-medium text-ink-900 mb-1.5">Select images or PDFs</label>
+        <input type="file" name="photos[]" id="photos" multiple accept="image/*,.pdf,application/pdf" required
+            class="w-full text-sm text-ink-500 file:mr-4 file:h-8 file:px-3 file:rounded-sm file:border file:border-ink-200 file:bg-white file:text-[13px] file:font-semibold file:text-ink-900 hover:file:bg-surface-50">
+        <p class="mt-2 font-mono text-[11px] text-ink-400">images and pdfs · max 10 MB per file · up to 20 files at once</p>
+        <div class="mt-5 pt-4 border-t border-ink-100 flex items-center justify-end gap-2">
+            {% call ui.button(type="button", variant="secondary", size="sm", attrs='x-on:click="$dispatch(\'close-modal-upload\')"') %}Cancel{% endcall %}
+            {% call ui.button(type="submit", variant="primary", size="sm") %}Upload{% endcall %}
+        </div>
+    </form>
+{% endcall %}
+{% endblock %}

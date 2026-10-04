@@ -1,0 +1,9 @@
+{% extends "layouts/dashboard.html" %}
+
+{% block content %}
+<form method="POST" action="/dashboard/galleries/{{ gallery.id }}">
+    {{ csrf_field() }}
+    {{ method_field("PUT") }}
+    {% include "dashboard/galleries/form.html" %}
+</form>
+{% endblock %}
