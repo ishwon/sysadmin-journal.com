@@ -6,7 +6,6 @@ use std::sync::LazyLock;
 
 use axum::extract::Multipart;
 use axum::response::Response;
-use minijinja::context;
 use regex::Regex;
 use serde::Serialize;
 
@@ -14,6 +13,9 @@ use crate::http::form::FormData;
 use crate::http::middleware::token_matches;
 use crate::http::validation::Validator;
 use crate::http::{AppError, Ctx};
+use crate::views::layouts::DashboardPage;
+use crate::views::pages::MediaIndex;
+use crate::views::{render, ui};
 
 const BASE: &str = "images";
 const MAX_FILE_BYTES: usize = 10 * 1024 * 1024;
@@ -160,27 +162,40 @@ pub async fn index(ctx: Ctx) -> Result<Response, AppError> {
             path: accumulated.clone(),
         });
     }
-    let crumb_links: Vec<serde_json::Value> = std::iter::once(
-        serde_json::json!({ "label": "dashboard", "href": "/dashboard" }),
-    )
-    .chain(breadcrumbs.iter().map(
-        |c| serde_json::json!({ "label": c.name.to_lowercase(), "href": media_index_url(&c.path) }),
-    ))
-    .collect();
+    let mut crumbs = vec![ui::crumb("dashboard", Some("/dashboard"))];
+    crumbs.extend(
+        breadcrumbs
+            .iter()
+            .map(|c| ui::crumb(&c.name.to_lowercase(), Some(&media_index_url(&c.path)))),
+    );
 
-    ctx.render_dashboard(
-        "dashboard/media/index.html",
-        context! {
-            title => "Media",
-            page_title => "Media",
-            current_media_path => current,
-            directories,
-            images,
-            pdfs,
-            breadcrumbs => crumb_links,
-        },
-    )
-    .await
+    let file_count = images.len() + pdfs.len();
+    let base = ctx.base();
+    let content = render(MediaIndex {
+        base: &base,
+        current_media_path: current,
+        directories,
+        images,
+        pdfs,
+    })?;
+    let page = DashboardPage::new("Media", content)
+        .heading("Media")
+        .breadcrumbs(ui::breadcrumbs(&crumbs))
+        .aside(format!(
+            "<div><p class=\"meta\">{file_count} files</p></div>"
+        ))
+        .actions(format!(
+            "{}{}",
+            ui::button("secondary")
+                .size("sm")
+                .attrs(r#"x-data @click="$dispatch('open-modal-create-dir')""#)
+                .html("New folder"),
+            ui::button("primary")
+                .size("sm")
+                .attrs(r#"x-data @click="$dispatch('open-modal-upload')""#)
+                .html("Upload")
+        ));
+    ctx.dashboard(&base, page).await
 }
 
 /// `POST /dashboard/media/directory`.

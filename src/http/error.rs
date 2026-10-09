@@ -6,7 +6,6 @@ pub enum AppError {
     NotFound,
     Forbidden,
     Db(sqlx::Error),
-    Template(minijinja::Error),
     Other(anyhow::Error),
 }
 
@@ -16,12 +15,6 @@ impl From<sqlx::Error> for AppError {
             sqlx::Error::RowNotFound => AppError::NotFound,
             other => AppError::Db(other),
         }
-    }
-}
-
-impl From<minijinja::Error> for AppError {
-    fn from(e: minijinja::Error) -> Self {
-        AppError::Template(e)
     }
 }
 
@@ -52,36 +45,11 @@ impl IntoResponse for AppError {
                 tracing::error!(error = %e, "database error");
                 error_page(StatusCode::INTERNAL_SERVER_ERROR, "Server Error")
             }
-            AppError::Template(e) => {
-                tracing::error!(error = %e, "template error");
-                let detail = if cfg!(debug_assertions) {
-                    format!("{e:#}")
-                } else {
-                    String::new()
-                };
-                Html(format!(
-                    "<!DOCTYPE html><html><body style=\"font-family:monospace;padding:2rem\"><h1>500 Server Error</h1><pre>{}</pre></body></html>",
-                    crate::support::text::escape(&detail)
-                ))
-                .into_response()
-                .with_status(StatusCode::INTERNAL_SERVER_ERROR)
-            }
             AppError::Other(e) => {
                 tracing::error!(error = %e, "request failed");
                 error_page(StatusCode::INTERNAL_SERVER_ERROR, "Server Error")
             }
         }
-    }
-}
-
-trait WithStatus {
-    fn with_status(self, status: StatusCode) -> Response;
-}
-
-impl WithStatus for Response {
-    fn with_status(mut self, status: StatusCode) -> Response {
-        *self.status_mut() = status;
-        self
     }
 }
 

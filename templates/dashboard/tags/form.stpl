@@ -1,0 +1,44 @@
+<% let t = tag.as_ref(); let old = &base.old; %>
+<form method="POST" action="<%= action %>">
+    <%- base.csrf_field() %>
+    <% if editing { %><%- method_field("PUT") %><% } %>
+<div x-data="{
+    name: <%= js(&old.or("name", t.map(|t| t.name.as_str()))) %>,
+    slug: <%= js(&old.or("slug", t.map(|t| t.slug.as_str()))) %>,
+    slugManual: <%= js(&!old.or("slug", t.map(|t| t.slug.as_str())).is_empty()) %>,
+    generateSlug() {
+        if (this.slugManual && this.slug) return;
+        this.slug = this.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    }
+}">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 space-y-6">
+            <% let details = ui::card().title("Details"); %>
+            <%- details.open() %>
+                <div class="space-y-4">
+                    <%- ui::input("name").label("Name").required(true).attrs(r#"x-model="name" @input.debounce.500ms="generateSlug()""#).html() %>
+                    <%- ui::input("slug").label("Slug").required(true).class("font-mono").attrs(r#"x-model="slug" @input="slugManual = true""#).html() %>
+                    <%- ui::textarea("description").label("Description").rows(4).value(old.or("description", t.and_then(|t| t.description.as_deref()))).html() %>
+                </div>
+            <%- details.close() %>
+        </div>
+
+        <div class="space-y-6">
+            <% let assets = ui::card().title("Assets"); %>
+            <%- assets.open() %>
+                <%- ui::input("feature_image").label("Feature image URL").value(old.or("feature_image", t.and_then(|t| t.feature_image.as_deref()))).html() %>
+            <%- assets.close() %>
+
+            <% let seo = ui::card().title("SEO"); %>
+            <%- seo.open() %>
+                <div class="space-y-3">
+                    <%- ui::input("meta_title").label("Meta title").value(old.or("meta_title", t.and_then(|t| t.meta_title.as_deref()))).html() %>
+                    <%- ui::textarea("meta_description").label("Meta description").rows(2).value(old.or("meta_description", t.and_then(|t| t.meta_description.as_deref()))).html() %>
+                </div>
+            <%- seo.close() %>
+
+            <%- ui::button("primary").submit().class("w-full").html(if editing { "Save changes" } else { "Create tag" }) %>
+        </div>
+    </div>
+</div>
+</form>

@@ -3,13 +3,14 @@ use std::sync::LazyLock;
 use axum::extract::Path;
 use axum::http::header;
 use axum::response::{IntoResponse, Response};
-use minijinja::context;
 use regex::Regex;
 
 use crate::http::{AppError, Ctx};
 use crate::models::post::{Order, Post, PostQuery};
 use crate::models::tag::Tag;
 use crate::support::dates;
+use crate::views::pages::Rss;
+use crate::views::render;
 
 const ITEM_LIMIT: i64 = 20;
 
@@ -67,32 +68,31 @@ async fn feed_response(
         .await?;
     let mut posts = Post::load_relations(db, posts).await?;
 
-    let base = ctx.state.config.url("/").trim_end_matches('/').to_string();
+    let base_url = ctx.state.config.url("/").trim_end_matches('/').to_string();
     for view in &mut posts {
-        view.post.html = Some(prepare_content(view.post.html.as_deref(), &base));
+        view.post.html = Some(prepare_content(view.post.html.as_deref(), &base_url));
         view.post.feature_image = view
             .post
             .feature_image
             .as_deref()
-            .map(|p| absolute(&base, p));
+            .map(|p| absolute(&base_url, p));
     }
 
     let last_build_date = posts
         .first()
-        .and_then(|p| p.post.published_at)
+        .and_then(|p| p.published_at)
         .unwrap_or_else(dates::now);
 
-    let xml = ctx.render_string(
-        "feed/rss.xml",
-        context! {
-            posts,
-            title,
-            description,
-            link,
-            self_url,
-            last_build_date => dates::rss(last_build_date),
-        },
-    )?;
+    let base = ctx.base();
+    let xml = render(Rss {
+        base: &base,
+        title,
+        description,
+        link,
+        self_url,
+        last_build_date: dates::rss(last_build_date),
+        posts,
+    })?;
 
     Ok((
         [(header::CONTENT_TYPE, "application/xml; charset=UTF-8")],

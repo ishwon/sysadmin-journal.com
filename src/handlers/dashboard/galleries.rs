@@ -1,34 +1,75 @@
 use axum::extract::Path;
 use axum::response::Response;
-use minijinja::context;
 
 use super::PER_PAGE;
 use crate::http::form::FormData;
 use crate::http::validation::Validator;
 use crate::http::{AppError, Ctx};
-use crate::models::gallery::{Gallery, GalleryImageInput, GalleryInput};
+use crate::models::gallery::{Gallery, GalleryImageInput, GalleryInput, GalleryWithImages};
 use crate::support::pagination::Page;
 use crate::support::text;
+use crate::views::layouts::DashboardPage;
+use crate::views::pages::{GalleriesAdmin, GalleryForm};
+use crate::views::{render, ui};
 
 /// `GET /dashboard/galleries`.
 pub async fn index(ctx: Ctx) -> Result<Response, AppError> {
-    let page = ctx.page();
+    let page = ctx.page_number();
     let (galleries, total) = Gallery::paginate_with_counts(ctx.db(), PER_PAGE, page).await?;
     let galleries = Page::new(galleries, total, PER_PAGE, page, &ctx.path, &ctx.query);
-    ctx.render_dashboard(
-        "dashboard/galleries/index.html",
-        context! { title => "Galleries", page_title => "Galleries", galleries },
-    )
-    .await
+    let base = ctx.base();
+    let content = render(GalleriesAdmin {
+        base: &base,
+        galleries,
+    })?;
+    let page = DashboardPage::new("Galleries", content)
+        .heading("Galleries")
+        .actions(
+            ui::button("primary")
+                .size("sm")
+                .href("/dashboard/galleries/create")
+                .html("New gallery"),
+        );
+    ctx.dashboard(&base, page).await
+}
+
+async fn form_page(
+    ctx: &Ctx,
+    title: &str,
+    gallery: Option<GalleryWithImages>,
+) -> Result<Response, AppError> {
+    let images_initial: Vec<GalleryImageInput> = gallery
+        .as_ref()
+        .map(|g| {
+            g.images
+                .iter()
+                .map(|i| GalleryImageInput {
+                    path: i.image_path.clone(),
+                    caption: i.caption.clone(),
+                    alt_text: i.alt_text.clone(),
+                })
+                .collect()
+        })
+        .unwrap_or_default();
+    let (action, editing) = match &gallery {
+        Some(g) => (format!("/dashboard/galleries/{}", g.id), true),
+        None => ("/dashboard/galleries".to_string(), false),
+    };
+    let base = ctx.base();
+    let content = render(GalleryForm {
+        base: &base,
+        gallery,
+        images_initial,
+        action,
+        editing,
+    })?;
+    ctx.dashboard(&base, DashboardPage::new(title, content))
+        .await
 }
 
 /// `GET /dashboard/galleries/create`.
 pub async fn create(ctx: Ctx) -> Result<Response, AppError> {
-    ctx.render_dashboard(
-        "dashboard/galleries/create.html",
-        context! { title => "New Gallery", gallery => minijinja::Value::UNDEFINED, images_initial => Vec::<GalleryImageInput>::new() },
-    )
-    .await
+    form_page(&ctx, "New Gallery", None).await
 }
 
 /// `GET /dashboard/galleries/{id}/edit`.
@@ -39,20 +80,7 @@ pub async fn edit(ctx: Ctx, Path(id): Path<i64>) -> Result<Response, AppError> {
         .ok_or(AppError::NotFound)?
         .with_images(db)
         .await?;
-    let images_initial: Vec<GalleryImageInput> = gallery
-        .images
-        .iter()
-        .map(|i| GalleryImageInput {
-            path: i.image_path.clone(),
-            caption: i.caption.clone(),
-            alt_text: i.alt_text.clone(),
-        })
-        .collect();
-    ctx.render_dashboard(
-        "dashboard/galleries/edit.html",
-        context! { title => "Edit Gallery", gallery, images_initial },
-    )
-    .await
+    form_page(&ctx, "Edit Gallery", Some(gallery)).await
 }
 
 fn validate(form: &FormData) -> (Validator, Vec<GalleryImageInput>) {

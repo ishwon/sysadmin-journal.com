@@ -63,6 +63,14 @@ pub struct PostView {
     pub exists: bool,
 }
 
+impl std::ops::Deref for PostView {
+    type Target = Post;
+
+    fn deref(&self) -> &Post {
+        &self.post
+    }
+}
+
 #[derive(Clone, Debug, Default)]
 pub struct PostInput {
     pub title: String,

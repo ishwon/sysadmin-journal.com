@@ -1,18 +1,20 @@
 use axum::extract::Path;
-use axum::response::Response;
+use axum::response::{Html, IntoResponse, Response};
 use chrono::NaiveDateTime;
-use minijinja::context;
 
 use super::{PER_PAGE, process_content};
 use crate::http::form::FormData;
 use crate::http::validation::Validator;
 use crate::http::{AppError, Ctx};
 use crate::models::gallery::Gallery;
-use crate::models::post::{Order, Post, PostInput, PostQuery};
+use crate::models::post::{Order, Post, PostInput, PostQuery, PostView};
 use crate::models::tag::Tag;
 use crate::support::dates;
 use crate::support::pagination::Page;
 use crate::support::text;
+use crate::views::layouts::DashboardPage;
+use crate::views::pages::{PostForm, PostPreview, PostsAdmin};
+use crate::views::{render, ui};
 
 /// `GET /dashboard/posts` with the all / published / drafts filter.
 pub async fn index(ctx: Ctx) -> Result<Response, AppError> {
@@ -25,7 +27,7 @@ pub async fn index(ctx: Ctx) -> Result<Response, AppError> {
     if let Some(s) = &status {
         query = query.status(s);
     }
-    let page = ctx.page();
+    let page = ctx.page_number();
     let (posts, total) = query.paginate(db, PER_PAGE, page).await?;
     let posts = Page::new(
         Post::load_relations(db, posts).await?,
@@ -36,23 +38,73 @@ pub async fn index(ctx: Ctx) -> Result<Response, AppError> {
         &ctx.query,
     );
 
-    ctx.render_dashboard(
-        "dashboard/posts/index.html",
-        context! { title => "Posts", page_title => "Posts", posts, status },
-    )
-    .await
+    let active = "text-ink-900 border-b border-ink-900";
+    let inactive = "text-ink-400";
+    let filter = |label: &str, href: &str, on: bool| {
+        format!(
+            "<a href=\"{href}\" class=\"{} pb-0.5\">{label}</a>",
+            if on { active } else { inactive }
+        )
+    };
+    let aside = format!(
+        "<div><div class=\"flex gap-4 meta\">{}{}{}</div></div>",
+        filter("all", "/dashboard/posts", status.is_none()),
+        filter(
+            "published",
+            "/dashboard/posts?status=published",
+            status.as_deref() == Some("published")
+        ),
+        filter(
+            "drafts",
+            "/dashboard/posts?status=draft",
+            status.as_deref() == Some("draft")
+        )
+    );
+
+    let base = ctx.base();
+    let content = render(PostsAdmin { base: &base, posts })?;
+    let page = DashboardPage::new("Posts", content)
+        .heading("Posts")
+        .aside(aside)
+        .actions(
+            ui::button("primary")
+                .size("sm")
+                .href("/dashboard/posts/create")
+                .html("New post"),
+        );
+    ctx.dashboard(&base, page).await
+}
+
+async fn form_page(
+    ctx: &Ctx,
+    title: &str,
+    post: Option<PostView>,
+    post_tag_ids: Vec<i64>,
+) -> Result<Response, AppError> {
+    let db = ctx.db();
+    let tags = Tag::all_by_name(db).await?;
+    let galleries = Gallery::all_by_title(db).await?;
+    let (action, editing) = match &post {
+        Some(p) => (format!("/dashboard/posts/{}", p.id), true),
+        None => ("/dashboard/posts".to_string(), false),
+    };
+    let base = ctx.base();
+    let content = render(PostForm {
+        base: &base,
+        post,
+        post_tag_ids,
+        tags,
+        galleries,
+        action,
+        editing,
+    })?;
+    ctx.dashboard(&base, DashboardPage::new(title, content))
+        .await
 }
 
 /// `GET /dashboard/posts/create`.
 pub async fn create(ctx: Ctx) -> Result<Response, AppError> {
-    let db = ctx.db();
-    let tags = Tag::all_by_name(db).await?;
-    let galleries = Gallery::all_by_title(db).await?;
-    ctx.render_dashboard(
-        "dashboard/posts/create.html",
-        context! { title => "New Post", post => minijinja::Value::UNDEFINED, post_tag_ids => Vec::<i64>::new(), tags, galleries },
-    )
-    .await
+    form_page(&ctx, "New Post", None, Vec::new()).await
 }
 
 /// `GET /dashboard/posts/{id}/edit`.
@@ -60,14 +112,8 @@ pub async fn edit(ctx: Ctx, Path(id): Path<i64>) -> Result<Response, AppError> {
     let db = ctx.db();
     let post = Post::find(db, id).await?.ok_or(AppError::NotFound)?;
     let post_tag_ids = Post::tag_ids(db, post.id).await?;
-    let tags = Tag::all_by_name(db).await?;
-    let galleries = Gallery::all_by_title(db).await?;
     let post = post.into_view(db).await?;
-    ctx.render_dashboard(
-        "dashboard/posts/edit.html",
-        context! { title => "Edit Post", post, post_tag_ids, tags, galleries },
-    )
-    .await
+    form_page(&ctx, "Edit Post", Some(post), post_tag_ids).await
 }
 
 /// `GET /dashboard/posts/{id}` — preview with the gallery shortcodes rendered.
@@ -76,7 +122,12 @@ pub async fn show(ctx: Ctx, Path(id): Path<i64>) -> Result<Response, AppError> {
     let post = Post::find(db, id).await?.ok_or(AppError::NotFound)?;
     let mut view = post.into_view(db).await?;
     view.post.html = super::super::render_gallery_shortcodes(db, view.post.html.take()).await?;
-    ctx.render("dashboard/posts/preview.html", context! { post => view })
+    let base = ctx.base();
+    Ok(Html(render(PostPreview {
+        base: &base,
+        post: view,
+    })?)
+    .into_response())
 }
 
 fn validate(form: &FormData) -> Validator {
@@ -144,8 +195,9 @@ fn resolve_published_at(
     status: &str,
     existing: Option<NaiveDateTime>,
 ) -> Option<NaiveDateTime> {
-    if let Some(value) = input.filter(|v| !v.trim().is_empty())
-        && let Some(dt) = dates::parse(value)
+    if let Some(dt) = input
+        .filter(|v| !v.trim().is_empty())
+        .and_then(dates::parse)
     {
         return Some(dt);
     }

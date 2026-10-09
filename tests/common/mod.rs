@@ -109,7 +109,6 @@ impl TestApp {
             bcrypt_rounds: 4,
             public_dir: public_dir.clone(),
             media_dir,
-            templates_dir: PathBuf::from(concat!(env!("CARGO_MANIFEST_DIR"), "/templates")),
             key: vec![9u8; 64],
         };
         let state = AppState::new(db.clone(), config);

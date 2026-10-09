@@ -1,0 +1,154 @@
+<% let p = post.as_ref(); let old = &base.old; %>
+<% let format_default = if p.map(|p| p.markdown.as_deref().map(|m| !m.is_empty()).unwrap_or(false)).unwrap_or(false) { "markdown" } else { "html" }; %>
+<form method="POST" action="<%= action %>">
+    <%- base.csrf_field() %>
+    <% if editing { %><%- method_field("PUT") %><% } %>
+<div x-data="postForm({
+    title: <%= js(&old.or("title", p.map(|p| p.title.as_str()))) %>,
+    slug: <%= js(&old.or("slug", p.map(|p| p.slug.as_str()))) %>,
+    contentFormat: <%= js(&old.or("content_format", Some(format_default))) %>,
+    slugCheckUrl: <%= js(&"/dashboard/api/slug-check") %>,
+    postId: <%= js(&p.map(|p| p.id.to_string()).unwrap_or_default()) %>
+})">
+    <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_300px] gap-16">
+        <%# Editor column %>
+        <div>
+            <input type="text" name="title" x-model="title" @input.debounce.500ms="generateSlug()" required placeholder="Post title"
+                class="w-full border-0 p-0 bg-transparent display text-4xl placeholder:text-ink-200 focus:outline-none focus:ring-0">
+            <div class="mt-3 flex items-center gap-2 meta">
+                <span><%= base.app_host %>/</span>
+                <input type="text" name="slug" x-model="slug" @input="slugManual = true" required
+                    class="flex-1 border-0 border-b border-dashed border-ink-200 p-0 pb-0.5 bg-transparent font-mono text-xs text-ink-700 focus:outline-none focus:ring-0 focus:border-accent-500">
+            </div>
+
+            <%# Toolbar: format tabs · insert image · preview %>
+            <div class="mt-8 pb-2 border-b border-ink-100 flex items-center justify-between gap-4">
+                <div class="flex gap-4 font-mono text-xs">
+                    <label class="cursor-pointer pb-2 -mb-[9px] border-b" :class="contentFormat === 'markdown' ? 'text-accent-700 border-accent-700' : 'text-ink-400 border-transparent'">
+                        <input type="radio" name="content_format" value="markdown" x-model="contentFormat" class="sr-only">markdown
+                    </label>
+                    <label class="cursor-pointer pb-2 -mb-[9px] border-b" :class="contentFormat === 'html' ? 'text-accent-700 border-accent-700' : 'text-ink-400 border-transparent'">
+                        <input type="radio" name="content_format" value="html" x-model="contentFormat" class="sr-only">html
+                    </label>
+                    <button type="button" @click="activeTab = activeTab === 'preview' ? 'editor' : 'preview'; if (activeTab === 'preview') showPreview()"
+                        class="pb-2 -mb-[9px] border-b" :class="activeTab === 'preview' ? 'text-accent-700 border-accent-700' : 'text-ink-400 border-transparent hover:text-ink-700'">preview</button>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button type="button" @click="$dispatch('open-modal-insert-image')"
+                        class="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-sm border border-ink-200 bg-white font-mono text-[11px] text-ink-900 hover:bg-surface-50 transition-colors">
+                        <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                        insert image
+                    </button>
+                    <span class="meta" x-text="wordCount()"></span>
+                </div>
+            </div>
+
+            <div x-show="activeTab === 'editor'" class="mt-4">
+                <textarea name="content" id="content" rows="24" x-ref="content" @input="$el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px'"
+                    class="w-full border-0 p-0 bg-transparent font-mono text-sm leading-[1.7] text-ink-700 resize-y focus:outline-none focus:ring-0"><%= old.or("content", p.and_then(|p| p.markdown.as_deref().filter(|m| !m.is_empty()).or(p.html.as_deref()))) %></textarea>
+            </div>
+
+            <div x-show="activeTab === 'preview'" x-cloak class="mt-4">
+                <iframe x-ref="previewFrame" class="w-full rounded-sm border border-ink-100 bg-white" style="min-height: 640px;"></iframe>
+            </div>
+
+            <div class="mt-8 pt-6 border-t border-ink-100">
+                <label for="custom_excerpt" class="block eyebrow mb-2">/excerpt/</label>
+                <textarea name="custom_excerpt" id="custom_excerpt" rows="2" placeholder="Leave empty to use the first paragraph."
+                    class="w-full rounded-sm border border-ink-200 px-3 py-2.5 font-serif text-base leading-relaxed text-ink-900 placeholder:text-ink-300 focus:outline-none focus:border-accent-500 focus:shadow-[var(--shadow-focus)] resize-y"><%= old.or("custom_excerpt", p.and_then(|p| p.custom_excerpt.as_deref())) %></textarea>
+                <p class="mt-1.5 font-mono text-[11px] text-ink-400">HTML is allowed — &lt;a&gt;, &lt;strong&gt;, &lt;em&gt; will render in the article.</p>
+            </div>
+        </div>
+
+        <%# Sidebar %>
+        <aside class="flex flex-col divide-y divide-ink-100">
+            <section class="pb-6">
+                <h3 class="eyebrow mb-3">/publish/</h3>
+                <div class="space-y-3">
+                    <%- ui::select("status").label("Status").options(&[("draft", "Draft"), ("published", "Published")]).selected(old.or("status", Some(p.map(|p| p.status.as_str()).unwrap_or("draft")))).html() %>
+                    <% let published_default = p.and_then(|p| p.published_at).map(|d| date_at(d, "Y-m-d\\TH:i")); %>
+                    <%- ui::input("published_at").kind("datetime-local").label("Publish date").class("font-mono text-xs")
+                        .value(old.or("published_at", published_default.as_deref()))
+                        .hint("Drives the date shown on the article. Leave empty to use publish time.").html() %>
+                </div>
+            </section>
+
+            <section class="py-6">
+                <h3 class="eyebrow mb-3">/tags/</h3>
+                <div class="flex flex-wrap gap-1.5">
+                    <% let old_tags = old.list("tags"); %>
+                    <% for tag in &tags { %>
+                        <% let on = match &old_tags { Some(list) => list.contains(&tag.id.to_string()), None => post_tag_ids.contains(&tag.id) }; %>
+                        <label class="cursor-pointer">
+                            <input type="checkbox" name="tags[]" value="<%= tag.id %>" <% if on { %>checked<% } %> class="peer sr-only">
+                            <span class="inline-flex rounded-xs px-2 py-[3px] font-mono text-[11px] border border-ink-100 text-ink-400 transition-colors peer-checked:bg-sky-100 peer-checked:border-sky-200 peer-checked:text-ink-900 hover:border-ink-300"><%= tag.name %></span>
+                        </label>
+                    <% } %>
+                </div>
+            </section>
+
+            <section class="py-6">
+                <h3 class="eyebrow mb-3">/feature-image/</h3>
+                <div class="space-y-2">
+                    <%- ui::input("feature_image").placeholder("Image URL").value(old.or("feature_image", p.and_then(|p| p.feature_image.as_deref()))).class("font-mono text-xs").html() %>
+                    <%- ui::input("feature_image_alt").placeholder("Alt text").value(old.or("feature_image_alt", p.and_then(|p| p.feature_image_alt.as_deref()))).html() %>
+                    <%- ui::input("feature_image_caption").placeholder("Caption").value(old.or("feature_image_caption", p.and_then(|p| p.feature_image_caption.as_deref()))).html() %>
+                </div>
+            </section>
+
+            <section class="py-6">
+                <h3 class="eyebrow mb-3">/gallery/</h3>
+                <% let gallery_default = p.and_then(|p| p.gallery_id).map(|id| id.to_string()); %>
+                <%- ui::select("gallery_id")
+                    .options_owned(galleries.iter().map(|g| (g.id.to_string(), g.title.clone())).collect())
+                    .selected(old.or("gallery_id", gallery_default.as_deref()))
+                    .placeholder("None").hint("Displayed at the bottom of the article.").html() %>
+            </section>
+
+            <section class="py-6">
+                <h3 class="eyebrow mb-3">/seo/</h3>
+                <div class="space-y-2">
+                    <%- ui::input("meta_title").placeholder("Meta title").value(old.or("meta_title", p.and_then(|p| p.meta_title.as_deref()))).html() %>
+                    <%- ui::textarea("meta_description").placeholder("Meta description").rows(2).value(old.or("meta_description", p.and_then(|p| p.meta_description.as_deref()))).html() %>
+                    <%- ui::input("og_image").placeholder("OG image URL").value(old.or("og_image", p.and_then(|p| p.og_image.as_deref()))).class("font-mono text-xs").html() %>
+                    <%- ui::input("twitter_image").placeholder("Twitter image URL").value(old.or("twitter_image", p.and_then(|p| p.twitter_image.as_deref()))).class("font-mono text-xs").html() %>
+                    <p class="font-mono text-[11px] text-ink-400">og image falls back to the feature image.</p>
+                </div>
+            </section>
+
+            <section class="pt-6">
+                <%- ui::button("primary").submit().class("w-full").html(if editing { "Save changes" } else { "Create post" }) %>
+            </section>
+        </aside>
+    </div>
+
+    <%# Insert image dialog %>
+    <%- ui::modal_open("insert-image", Some("Insert image"), Some("/insert-image/"), "sm") %>
+        <div class="space-y-3.5" x-data="{ url: '', caption: '', alt: '' }" x-on:open-modal-insert-image.window="url = ''; caption = ''; alt = ''; $nextTick(() => $refs.url.focus())">
+            <div>
+                <label class="block text-[13px] font-medium text-ink-900 mb-1.5">Image URL</label>
+                <input type="text" x-ref="url" x-model="url" placeholder="/content/images/2026/04/…"
+                    class="w-full rounded-sm border border-ink-200 px-3 py-2 font-mono text-[13px] text-ink-900 placeholder:text-ink-300 focus:outline-none focus:border-accent-500 focus:shadow-[var(--shadow-focus)]">
+                <p class="mt-1.5 font-mono text-[11px] text-ink-400">paste a URL or copy one from <a href="/dashboard/media" target="_blank" class="link-rise">media</a></p>
+            </div>
+            <div>
+                <label class="block text-[13px] font-medium text-ink-900 mb-1.5">Caption</label>
+                <input type="text" x-model="caption" placeholder="Shown under the image"
+                    class="w-full rounded-sm border border-ink-200 px-3 py-2 text-sm text-ink-900 placeholder:text-ink-300 focus:outline-none focus:border-accent-500 focus:shadow-[var(--shadow-focus)]">
+            </div>
+            <div>
+                <label class="block text-[13px] font-medium text-ink-900 mb-1.5">Alt text</label>
+                <input type="text" x-model="alt" placeholder="Describe the image for screen readers"
+                    class="w-full rounded-sm border border-ink-200 px-3 py-2 text-sm text-ink-900 placeholder:text-ink-300 focus:outline-none focus:border-accent-500 focus:shadow-[var(--shadow-focus)]">
+            </div>
+            <div class="pt-4 border-t border-ink-100 flex items-center justify-between gap-3">
+                <code class="font-mono text-[11px] text-ink-400 truncate min-w-0" x-text="url ? imageSnippet(url, alt, caption) : 'snippet preview'"></code>
+                <div class="flex gap-2 shrink-0">
+                    <%- ui::button("secondary").size("sm").attrs(r#"x-on:click="$dispatch('close-modal-insert-image')""#).html("Cancel") %>
+                    <%- ui::button("primary").size("sm").attrs(r#"x-on:click="insertImage(url, alt, caption); $dispatch('close-modal-insert-image')" x-bind:disabled="!url""#).html("Insert") %>
+                </div>
+            </div>
+        </div>
+    <%- ui::modal_close(None) %>
+</div>
+</form>

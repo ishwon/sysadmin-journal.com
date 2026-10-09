@@ -1,0 +1,28 @@
+<%- ui::table_open(&["title", "status", "date", ""]) %>
+    <% if posts.data.is_empty() { %>
+        <tr>
+            <td colspan="4" class="py-10">
+                <%- ui::empty_state("No posts yet", Some("Write your first post to see it here."), Some(ui::button("primary").href("/dashboard/posts/create").html("Create post"))) %>
+            </td>
+        </tr>
+    <% } %>
+    <% for post in &posts.data { %>
+        <tr>
+            <td>
+                <a href="/dashboard/posts/<%= post.id %>/edit" class="font-display text-lg text-ink-900 hover:text-accent-700 transition-colors"><%= post.title %></a>
+                <p class="meta mt-0.5">/<%= post.slug %></p>
+            </td>
+            <td><%- ui::status_badge(&post.status) %></td>
+            <td class="meta whitespace-nowrap"><%= date_or(&post.published_at, &post.created_at, "j M Y") %></td>
+            <td class="text-right whitespace-nowrap meta">
+                <a href="/dashboard/posts/<%= post.id %>/edit" class="link-rise">edit</a>
+                <span class="text-ink-200"> · </span>
+                <a href="/dashboard/posts/<%= post.id %>" target="_blank" class="link-rise">preview</a>
+                <span class="text-ink-200"> · </span>
+                <a href="/<%= post.slug %>" target="_blank" class="link-rise">view</a>
+                <span class="text-ink-200"> · </span>
+                <%- ui::delete_form(&format!("/dashboard/posts/{}", post.id), "Delete this post?", &base.csrf_field()) %>
+            </td>
+        </tr>
+    <% } %>
+<%- ui::table_close(ui::links_footer(&posts)) %>

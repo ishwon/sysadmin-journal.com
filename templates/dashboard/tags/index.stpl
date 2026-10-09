@@ -1,0 +1,21 @@
+<%- ui::table_open(&["name", "slug", "posts", ""]) %>
+    <% if tags.data.is_empty() { %>
+        <tr><td colspan="4" class="py-10">
+            <%- ui::empty_state("No tags yet", Some("Tags group posts by topic. Every post gets at least one."), Some(ui::button("primary").href("/dashboard/tags/create").html("Create tag"))) %>
+        </td></tr>
+    <% } %>
+    <% for tag in &tags.data { %>
+        <tr>
+            <td><a href="/dashboard/tags/<%= tag.id %>/edit" class="font-display text-lg text-ink-900 hover:text-accent-700 transition-colors"><%= tag.name %></a></td>
+            <td><code class="font-mono text-xs bg-surface-50 px-1.5 py-0.5 rounded-xs text-ink-700">/tag/<%= tag.slug %></code></td>
+            <td class="meta"><%= tag.posts_count %></td>
+            <td class="text-right whitespace-nowrap meta">
+                <a href="/dashboard/tags/<%= tag.id %>/edit" class="link-rise">edit</a>
+                <span class="text-ink-200"> · </span>
+                <a href="/tag/<%= tag.slug %>" target="_blank" class="link-rise">view</a>
+                <span class="text-ink-200"> · </span>
+                <%- ui::delete_form(&format!("/dashboard/tags/{}", tag.id), "Delete this tag?", &base.csrf_field()) %>
+            </td>
+        </tr>
+    <% } %>
+<%- ui::table_close(ui::links_footer(&tags)) %>

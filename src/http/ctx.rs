@@ -7,7 +7,6 @@ use axum::extract::FromRequestParts;
 use axum::http::header::REFERER;
 use axum::http::request::Parts;
 use axum::response::{Html, IntoResponse, Redirect, Response};
-use minijinja::value::Value;
 use tower_cookies::Cookies;
 use tower_sessions::Session;
 
@@ -20,6 +19,8 @@ use crate::models::post::PostQuery;
 use crate::models::tag::Tag;
 use crate::models::user::User;
 use crate::support::text;
+use crate::views::layouts::{AppLayout, DashboardLayout, DashboardPage};
+use crate::views::{Base, NavCounts, Old, Seo, render};
 
 /// The authenticated user, placed into request extensions by the auth middleware.
 #[derive(Clone, Debug)]
@@ -116,7 +117,7 @@ impl Ctx {
             .map(|(_, v)| v.as_str())
     }
 
-    pub fn page(&self) -> i64 {
+    pub fn page_number(&self) -> i64 {
         crate::support::pagination::page_from(self.query_value("page"))
     }
 
@@ -125,49 +126,68 @@ impl Ctx {
         self.user.as_ref().ok_or(AppError::Forbidden)
     }
 
-    /// Variables available to every template (`csrf_token`, `auth_user`, …).
-    fn base_context(&self) -> Value {
+    /// The shared template context for this request.
+    pub fn base(&self) -> Base {
         let config = &self.state.config;
-        minijinja::context! {
-            csrf_token => self.csrf.clone(),
-            auth_user => self.user.clone(),
-            current_path => self.path.clone(),
-            current_url => config.url(&self.path),
-            app_name => config.app_name.clone(),
-            app_env => config.app_env.clone(),
-            app_url => config.app_url.clone(),
-            app_host => config.host_name(),
-            flash_success => self.flash.success.clone(),
-            flash_error => self.flash.error.clone(),
-            errors => self.flash.errors.clone(),
-            old => self.flash.old.clone(),
-            year => crate::support::dates::now().format("%Y").to_string(),
+        Base {
+            csrf_token: self.csrf.clone(),
+            auth_user: self.user.clone(),
+            current_path: self.path.clone(),
+            current_url: config.url(&self.path),
+            app_name: config.app_name.clone(),
+            app_env: config.app_env.clone(),
+            app_url: config.app_url.clone(),
+            app_host: config.host_name(),
+            flash_success: self.flash.success.clone(),
+            flash_error: self.flash.error.clone(),
+            errors: self.flash.errors.clone(),
+            old: Old(self.flash.old.clone()),
+            year: crate::support::dates::now().format("%Y").to_string(),
+            vite_tags: self
+                .state
+                .vite
+                .tags(&["resources/css/app.css", "resources/js/app.js"]),
         }
     }
 
-    pub fn render(&self, name: &str, ctx: Value) -> Result<Response, AppError> {
-        let merged = minijinja::context! { ..ctx, ..self.base_context() };
-        let html = self.state.templates.render(name, merged)?;
+    /// A rendered public page wrapped in the site layout.
+    pub fn page(
+        &self,
+        base: &Base,
+        seo: &Seo,
+        feed_url: Option<String>,
+        content: String,
+    ) -> Result<Response, AppError> {
+        let html = render(AppLayout {
+            base,
+            seo,
+            feed_url,
+            content,
+        })?;
         Ok(Html(html).into_response())
     }
 
-    /// Render a dashboard page: adds the sidebar counts the layout shows.
-    pub async fn render_dashboard(&self, name: &str, ctx: Value) -> Result<Response, AppError> {
+    /// A rendered dashboard page wrapped in the backoffice layout (with sidebar counts).
+    pub async fn dashboard(&self, base: &Base, page: DashboardPage) -> Result<Response, AppError> {
         let db = self.db();
-        let nav_counts = minijinja::context! {
-            posts => PostQuery::new().posts().count(db).await?,
-            pages => PostQuery::new().pages().count(db).await?,
-            galleries => Gallery::count(db).await?,
-            tags => Tag::count(db).await?,
-            users => User::count(db).await?,
+        let nav_counts = NavCounts {
+            posts: PostQuery::new().posts().count(db).await?,
+            pages: PostQuery::new().pages().count(db).await?,
+            galleries: Gallery::count(db).await?,
+            tags: Tag::count(db).await?,
+            users: User::count(db).await?,
         };
-        self.render(name, minijinja::context! { nav_counts, ..ctx })
-    }
-
-    /// Render a template to a string with the base context (feeds, sitemaps).
-    pub fn render_string(&self, name: &str, ctx: Value) -> Result<String, AppError> {
-        let merged = minijinja::context! { ..ctx, ..self.base_context() };
-        Ok(self.state.templates.render(name, merged)?)
+        let html = render(DashboardLayout {
+            base,
+            title: page.title,
+            page_title: page.page_title,
+            page_aside: page.page_aside,
+            actions: page.actions,
+            breadcrumbs: page.breadcrumbs,
+            nav_counts,
+            content: page.content,
+        })?;
+        Ok(Html(html).into_response())
     }
 
     async fn put_flash(&self, flash: Flash) -> Result<(), AppError> {

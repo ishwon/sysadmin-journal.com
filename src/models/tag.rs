@@ -29,6 +29,14 @@ pub struct TagWithCount {
     pub posts_count: i64,
 }
 
+impl std::ops::Deref for TagWithCount {
+    type Target = Tag;
+
+    fn deref(&self) -> &Tag {
+        &self.tag
+    }
+}
+
 #[derive(Clone, Debug, Default)]
 pub struct TagInput {
     pub name: String,

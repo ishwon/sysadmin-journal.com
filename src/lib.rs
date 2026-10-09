@@ -9,4 +9,4 @@ pub mod http;
 pub mod models;
 pub mod router;
 pub mod support;
-pub mod templates;
+pub mod views;

@@ -1,0 +1,65 @@
+<% let p = page.as_ref(); let old = &base.old; %>
+<% let format_default = if p.map(|p| p.markdown.as_deref().map(|m| !m.is_empty()).unwrap_or(false)).unwrap_or(false) { "markdown" } else { "html" }; %>
+<form method="POST" action="<%= action %>">
+    <%- base.csrf_field() %>
+    <% if editing { %><%- method_field("PUT") %><% } %>
+<div x-data="{
+    title: <%= js(&old.or("title", p.map(|p| p.title.as_str()))) %>,
+    slug: <%= js(&old.or("slug", p.map(|p| p.slug.as_str()))) %>,
+    slugManual: <%= js(&!old.or("slug", p.map(|p| p.slug.as_str())).is_empty()) %>,
+    contentFormat: <%= js(&old.or("content_format", Some(format_default))) %>,
+    async generateSlug() {
+        if (this.slugManual && this.slug) return;
+        const response = await fetch('/dashboard/api/slug-check', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content },
+            body: JSON.stringify({ title: this.title, exclude_id: <%= js(&p.map(|p| p.id.to_string()).unwrap_or_default()) %> })
+        });
+        const data = await response.json();
+        this.slug = data.slug;
+    }
+}">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 space-y-6">
+            <% let card = ui::card(); %>
+            <%- card.open() %>
+                <div class="space-y-4">
+                    <%- ui::input("title").label("Title").required(true).attrs(r#"x-model="title" @input.debounce.500ms="generateSlug()""#).html() %>
+                    <%- ui::input("slug").label("Slug").required(true).class("font-mono").attrs(r#"x-model="slug" @input="slugManual = true""#).html() %>
+                    <div>
+                        <p class="block text-sm font-medium text-ink-800 dark:text-ink-100 mb-1.5">Content format</p>
+                        <div class="flex gap-4">
+                            <%- ui::radio("content_format", "html", Some("HTML"), false, r#"x-model="contentFormat""#) %>
+                            <%- ui::radio("content_format", "markdown", Some("Markdown"), false, r#"x-model="contentFormat""#) %>
+                        </div>
+                    </div>
+                    <%- ui::textarea("content").label("Content").rows(20).mono().value(old.or("content", p.and_then(|p| p.markdown.as_deref().filter(|m| !m.is_empty()).or(p.html.as_deref())))).html() %>
+                    <%- ui::textarea("custom_excerpt").label("Custom excerpt").rows(3).value(old.or("custom_excerpt", p.and_then(|p| p.custom_excerpt.as_deref()))).html() %>
+                </div>
+            <%- card.close() %>
+        </div>
+
+        <div class="space-y-6">
+            <% let publish = ui::card().title("Publish"); %>
+            <%- publish.open() %>
+                <div class="space-y-4">
+                    <%- ui::select("status").label("Status").options(&[("draft", "Draft"), ("published", "Published")]).selected(old.or("status", Some(p.map(|p| p.status.as_str()).unwrap_or("draft")))).html() %>
+                    <%- ui::input("feature_image").label("Feature image URL").value(old.or("feature_image", p.and_then(|p| p.feature_image.as_deref()))).html() %>
+                    <%- ui::input("feature_image_alt").label("Feature image alt text").value(old.or("feature_image_alt", p.and_then(|p| p.feature_image_alt.as_deref()))).html() %>
+                    <%- ui::input("feature_image_caption").label("Feature image caption").value(old.or("feature_image_caption", p.and_then(|p| p.feature_image_caption.as_deref()))).html() %>
+                </div>
+            <%- publish.close() %>
+
+            <% let seo = ui::card().title("SEO"); %>
+            <%- seo.open() %>
+                <div class="space-y-3">
+                    <%- ui::input("meta_title").label("Meta title").value(old.or("meta_title", p.and_then(|p| p.meta_title.as_deref()))).html() %>
+                    <%- ui::textarea("meta_description").label("Meta description").rows(2).value(old.or("meta_description", p.and_then(|p| p.meta_description.as_deref()))).html() %>
+                </div>
+            <%- seo.close() %>
+
+            <%- ui::button("primary").submit().class("w-full").html(if editing { "Save changes" } else { "Create page" }) %>
+        </div>
+    </div>
+</div>
+</form>

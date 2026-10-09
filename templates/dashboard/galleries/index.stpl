@@ -1,0 +1,21 @@
+<%- ui::table_open(&["title", "images", "shortcode", ""]) %>
+    <% if galleries.data.is_empty() { %>
+        <tr><td colspan="4" class="py-10">
+            <%- ui::empty_state("No galleries yet", Some("Galleries group photos into reusable collections. Embed them in posts via shortcode."), Some(ui::button("primary").href("/dashboard/galleries/create").html("Create gallery"))) %>
+        </td></tr>
+    <% } %>
+    <% for gallery in &galleries.data { %>
+        <tr>
+            <td><a href="/dashboard/galleries/<%= gallery.id %>/edit" class="font-display text-lg text-ink-900 hover:text-accent-700 transition-colors"><%= gallery.title %></a></td>
+            <td class="meta"><%= gallery.images_count %></td>
+            <td><code class="font-mono text-xs bg-surface-50 px-1.5 py-0.5 rounded-xs text-ink-700">[gallery:<%= gallery.slug %>]</code></td>
+            <td class="text-right whitespace-nowrap meta">
+                <a href="/dashboard/galleries/<%= gallery.id %>/edit" class="link-rise">edit</a>
+                <span class="text-ink-200"> · </span>
+                <a href="/gallery/<%= gallery.slug %>" target="_blank" class="link-rise">view</a>
+                <span class="text-ink-200"> · </span>
+                <%- ui::delete_form(&format!("/dashboard/galleries/{}", gallery.id), "Delete this gallery?", &base.csrf_field()) %>
+            </td>
+        </tr>
+    <% } %>
+<%- ui::table_close(ui::links_footer(&galleries)) %>

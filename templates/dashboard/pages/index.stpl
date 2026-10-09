@@ -1,0 +1,24 @@
+<%- ui::table_open(&["title", "status", "updated", ""]) %>
+    <% if pages.data.is_empty() { %>
+        <tr><td colspan="4" class="py-10">
+            <%- ui::empty_state("No pages yet", Some("Pages are static content (About, Contact, etc.) not part of the chronological feed."), Some(ui::button("primary").href("/dashboard/pages/create").html("Create page"))) %>
+        </td></tr>
+    <% } %>
+    <% for page in &pages.data { %>
+        <tr>
+            <td>
+                <a href="/dashboard/pages/<%= page.id %>/edit" class="font-display text-lg text-ink-900 hover:text-accent-700 transition-colors"><%= page.title %></a>
+                <p class="meta mt-0.5">/<%= page.slug %></p>
+            </td>
+            <td><%- ui::status_badge(&page.status) %></td>
+            <td class="meta whitespace-nowrap"><%= date(&page.updated_at, "j M Y") %></td>
+            <td class="text-right whitespace-nowrap meta">
+                <a href="/dashboard/pages/<%= page.id %>/edit" class="link-rise">edit</a>
+                <span class="text-ink-200"> · </span>
+                <a href="/<%= page.slug %>" target="_blank" class="link-rise">view</a>
+                <span class="text-ink-200"> · </span>
+                <%- ui::delete_form(&format!("/dashboard/pages/{}", page.id), "Delete this page?", &base.csrf_field()) %>
+            </td>
+        </tr>
+    <% } %>
+<%- ui::table_close(ui::links_footer(&pages)) %>

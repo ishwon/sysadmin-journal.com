@@ -1,9 +1,0 @@
-{% extends "layouts/dashboard.html" %}
-
-{% block content %}
-<form method="POST" action="/dashboard/tags/{{ tag.id }}">
-    {{ csrf_field() }}
-    {{ method_field("PUT") }}
-    {% include "dashboard/tags/form.html" %}
-</form>
-{% endblock %}

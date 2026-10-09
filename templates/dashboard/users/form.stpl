@@ -1,0 +1,50 @@
+<% let u = user.as_ref(); let old = &base.old; %>
+<form method="POST" action="<%= action %>">
+    <%- base.csrf_field() %>
+    <% if editing { %><%- method_field("PUT") %><% } %>
+<div x-data="{
+    name: <%= js(&old.or("name", u.map(|u| u.name.as_str()))) %>,
+    slug: <%= js(&old.or("slug", u.map(|u| u.slug.as_str()))) %>,
+    slugManual: <%= js(&!old.or("slug", u.map(|u| u.slug.as_str())).is_empty()) %>,
+    generateSlug() {
+        if (this.slugManual && this.slug) return;
+        this.slug = this.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    }
+}">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 space-y-6">
+            <% let profile = ui::card().title("Profile"); %>
+            <%- profile.open() %>
+                <div class="space-y-4">
+                    <%- ui::input("name").label("Name").required(true).attrs(r#"x-model="name" @input.debounce.500ms="generateSlug()""#).html() %>
+                    <%- ui::input("slug").label("Slug").required(true).class("font-mono").attrs(r#"x-model="slug" @input="slugManual = true""#).html() %>
+                    <%- ui::input("email").kind("email").label("Email").value(old.or("email", u.map(|u| u.email.as_str()))).required(true).html() %>
+                    <%- ui::input("password").kind("password").label("Password").hint_opt(if editing { Some("Leave blank to keep current.") } else { None }).required(!editing).html() %>
+                    <%- ui::textarea("bio").label("Bio").rows(4).value(old.or("bio", u.and_then(|u| u.bio.as_deref()))).html() %>
+                </div>
+            <%- profile.close() %>
+        </div>
+
+        <div class="space-y-6">
+            <% let contact = ui::card().title("Avatar & contact"); %>
+            <%- contact.open() %>
+                <div class="space-y-3">
+                    <%- ui::input("profile_image").label("Profile image URL").value(old.or("profile_image", u.and_then(|u| u.profile_image.as_deref()))).html() %>
+                    <%- ui::input("website").label("Website").value(old.or("website", u.and_then(|u| u.website.as_deref()))).html() %>
+                    <%- ui::input("location").label("Location").value(old.or("location", u.and_then(|u| u.location.as_deref()))).html() %>
+                </div>
+            <%- contact.close() %>
+
+            <% let social = ui::card().title("Social"); %>
+            <%- social.open() %>
+                <div class="space-y-3">
+                    <%- ui::input("facebook").label("Facebook").value(old.or("facebook", u.and_then(|u| u.facebook.as_deref()))).html() %>
+                    <%- ui::input("twitter").label("Twitter").value(old.or("twitter", u.and_then(|u| u.twitter.as_deref()))).html() %>
+                </div>
+            <%- social.close() %>
+
+            <%- ui::button("primary").submit().class("w-full").html(if editing { "Save changes" } else { "Create user" }) %>
+        </div>
+    </div>
+</div>
+</form>

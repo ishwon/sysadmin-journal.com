@@ -1,0 +1,22 @@
+<title><%= seo.title %></title>
+<meta name="description" content="<%= seo.description %>">
+<link rel="canonical" href="<%= seo.canonical_url %>">
+
+<meta property="og:site_name" content="SysAdmin Journal">
+<meta property="og:type" content="<%= seo.kind %>">
+<meta property="og:title" content="<%= seo.title %>">
+<meta property="og:description" content="<%= seo.description %>">
+<meta property="og:url" content="<%= seo.url %>">
+<% if let Some(image) = &seo.image { %>
+<meta property="og:image" content="<%= base.url(image) %>">
+<% } %>
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="<%= seo.twitter_title %>">
+<meta name="twitter:description" content="<%= seo.twitter_description %>">
+<% if let Some(image) = &seo.twitter_image { %>
+<meta name="twitter:image" content="<%= base.url(image) %>">
+<% } %>
+<% if let Some(json_ld) = &seo.json_ld { %>
+<script type="application/ld+json"><%- json_ld %></script>
+<% } %>

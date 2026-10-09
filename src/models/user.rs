@@ -39,6 +39,14 @@ pub struct UserWithCount {
     pub posts_count: i64,
 }
 
+impl std::ops::Deref for UserWithCount {
+    type Target = User;
+
+    fn deref(&self) -> &User {
+        &self.user
+    }
+}
+
 /// Fields written by the dashboard form and the Ghost importer.
 #[derive(Clone, Debug, Default)]
 pub struct UserInput {

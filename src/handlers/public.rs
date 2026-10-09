@@ -1,6 +1,5 @@
 use axum::extract::Path;
 use axum::response::{IntoResponse, Response};
-use minijinja::context;
 use tower::ServiceExt;
 use tower_http::services::ServeFile;
 
@@ -10,6 +9,11 @@ use crate::models::post::{Order, Post, PostQuery};
 use crate::models::tag::Tag;
 use crate::models::user::User;
 use crate::support::pagination::Page;
+use crate::views::layouts::BrandLayout;
+use crate::views::pages::{
+    AuthorShow, BrandSystem, GalleriesIndex, GalleryShow, PageShow, PostShow, PostsIndex, TagShow,
+};
+use crate::views::{Seo, render};
 
 const PER_PAGE: i64 = 9;
 
@@ -27,7 +31,7 @@ pub async fn home(ctx: Ctx) -> Result<Response, AppError> {
         None => published.clone(),
     };
 
-    let page = ctx.page();
+    let page = ctx.page_number();
     let (posts, total) = query.paginate(db, PER_PAGE, page).await?;
     let posts = Post::load_relations(db, posts).await?;
     let posts = Page::new(posts, total, PER_PAGE, page, &ctx.path, &[]);
@@ -37,15 +41,10 @@ pub async fn home(ctx: Ctx) -> Result<Response, AppError> {
         _ => None,
     };
 
-    ctx.render(
-        "posts/index.html",
-        context! {
-            featured,
-            posts,
-            seo_title => "SysAdmin Journal",
-            seo_description => "Thoughts, ideas and stories",
-        },
-    )
+    let base = ctx.base();
+    let seo = Seo::new(&base, "SysAdmin Journal", "Thoughts, ideas and stories");
+    let content = render(PostsIndex { featured, posts })?;
+    ctx.page(&base, &seo, None, content)
 }
 
 /// `GET /{slug}` — a published post or page. Falls back to files in `public/`
@@ -68,87 +67,71 @@ pub async fn show(
     let mut view = post.into_view(db).await?;
     view.post.html = super::render_gallery_shortcodes(db, view.post.html.take()).await?;
 
+    let base = ctx.base();
     let seo_title = view
-        .post
         .meta_title
         .clone()
         .filter(|s| !s.is_empty())
-        .unwrap_or_else(|| format!("{} - SysAdmin Journal", view.post.title));
+        .unwrap_or_else(|| format!("{} - SysAdmin Journal", view.title));
     let seo_description = view
-        .post
         .meta_description
         .clone()
         .filter(|s| !s.is_empty())
         .unwrap_or_else(|| view.plain_excerpt.clone());
-    let seo_image = view
-        .post
+    let image = view
         .og_image
         .clone()
         .filter(|s| !s.is_empty())
-        .or_else(|| view.post.feature_image.clone());
+        .or_else(|| view.feature_image.clone().filter(|s| !s.is_empty()));
     let twitter_image = view
-        .post
         .twitter_image
         .clone()
         .filter(|s| !s.is_empty())
-        .or_else(|| view.post.og_image.clone().filter(|s| !s.is_empty()))
-        .or_else(|| view.post.feature_image.clone());
-    let canonical_url = view
-        .post
+        .or_else(|| image.clone());
+    let canonical = view
         .canonical_url
         .clone()
         .filter(|s| !s.is_empty())
-        .unwrap_or_else(|| ctx.state.config.url(&format!("/{}", view.post.slug)));
-    let seo_type = if view.post.is_post() {
-        "article"
-    } else {
-        "website"
+        .unwrap_or_else(|| base.url(&format!("/{}", view.slug)));
+    let seo = Seo::new(&base, seo_title, seo_description).for_post(
+        &base,
+        &view,
+        image,
+        twitter_image,
+        canonical,
+    );
+
+    if !view.is_post() {
+        let content = render(PageShow { post: view })?;
+        return ctx.page(&base, &seo, None, content);
+    }
+
+    let (previous, next) = match view.published_at {
+        Some(at) => (
+            PostQuery::new()
+                .posts()
+                .published()
+                .published_before(at)
+                .order(Order::PublishedDesc)
+                .first(db)
+                .await?,
+            PostQuery::new()
+                .posts()
+                .published()
+                .published_after(at)
+                .order(Order::PublishedAsc)
+                .first(db)
+                .await?,
+        ),
+        None => (None, None),
     };
 
-    let (previous, next) = if view.post.is_post() {
-        match view.post.published_at {
-            Some(at) => (
-                PostQuery::new()
-                    .posts()
-                    .published()
-                    .published_before(at)
-                    .order(Order::PublishedDesc)
-                    .first(db)
-                    .await?,
-                PostQuery::new()
-                    .posts()
-                    .published()
-                    .published_after(at)
-                    .order(Order::PublishedAsc)
-                    .first(db)
-                    .await?,
-            ),
-            None => (None, None),
-        }
-    } else {
-        (None, None)
-    };
-
-    let template = if view.post.is_post() {
-        "posts/show.html"
-    } else {
-        "pages/show.html"
-    };
-
-    ctx.render(
-        template,
-        context! {
-            post => view,
-            previous,
-            next,
-            seo_title,
-            seo_description,
-            seo_image,
-            seo_type,
-            twitter_image,
-            canonical_url,
-        },
-    )
+    let content = render(PostShow {
+        post: view,
+        previous,
+        next,
+    })?;
+    ctx.page(&base, &seo, None, content)
 }
 
 async fn serve_public_file(
@@ -178,7 +161,7 @@ pub async fn tag(ctx: Ctx, Path(slug): Path<String>) -> Result<Response, AppErro
         .await?
         .ok_or(AppError::NotFound)?;
 
-    let page = ctx.page();
+    let page = ctx.page_number();
     let (posts, total) = PostQuery::new()
         .posts()
         .published()
@@ -195,24 +178,24 @@ pub async fn tag(ctx: Ctx, Path(slug): Path<String>) -> Result<Response, AppErro
         &[],
     );
 
-    let seo_title = format!(
-        "{} - SysAdmin Journal",
-        tag.meta_title
+    let base = ctx.base();
+    let seo = Seo::new(
+        &base,
+        format!(
+            "{} - SysAdmin Journal",
+            tag.meta_title
+                .clone()
+                .filter(|s| !s.is_empty())
+                .unwrap_or_else(|| tag.name.clone())
+        ),
+        tag.meta_description
             .clone()
             .filter(|s| !s.is_empty())
-            .unwrap_or_else(|| tag.name.clone())
+            .unwrap_or_else(|| format!("Posts tagged with {}", tag.name)),
     );
-    let seo_description = tag
-        .meta_description
-        .clone()
-        .filter(|s| !s.is_empty())
-        .unwrap_or_else(|| format!("Posts tagged with {}", tag.name));
-    let feed_url = ctx.state.config.url(&format!("/tag/{}/rss", tag.slug));
-
-    ctx.render(
-        "tags/show.html",
-        context! { tag, posts, seo_title, seo_description, feed_url },
-    )
+    let feed_url = base.url(&format!("/tag/{}/rss", tag.slug));
+    let content = render(TagShow { tag, posts })?;
+    ctx.page(&base, &seo, Some(feed_url), content)
 }
 
 /// `GET /author/{slug}`.
@@ -222,7 +205,7 @@ pub async fn author(ctx: Ctx, Path(slug): Path<String>) -> Result<Response, AppE
         .await?
         .ok_or(AppError::NotFound)?;
 
-    let page = ctx.page();
+    let page = ctx.page_number();
     let (posts, total) = PostQuery::new()
         .posts()
         .published()
@@ -239,26 +222,27 @@ pub async fn author(ctx: Ctx, Path(slug): Path<String>) -> Result<Response, AppE
         &[],
     );
 
-    let seo_title = format!("{} - SysAdmin Journal", author.name);
-    let seo_description = author
-        .bio
-        .clone()
-        .filter(|s| !s.is_empty())
-        .unwrap_or_else(|| format!("Posts by {}", author.name));
-
-    ctx.render(
-        "authors/show.html",
-        context! { author, posts, seo_title, seo_description },
-    )
+    let base = ctx.base();
+    let seo = Seo::new(
+        &base,
+        format!("{} - SysAdmin Journal", author.name),
+        author
+            .bio
+            .clone()
+            .filter(|s| !s.is_empty())
+            .unwrap_or_else(|| format!("Posts by {}", author.name)),
+    );
+    let content = render(AuthorShow { author, posts })?;
+    ctx.page(&base, &seo, None, content)
 }
 
 /// `GET /gallery`.
 pub async fn galleries(ctx: Ctx) -> Result<Response, AppError> {
     let galleries = Gallery::all_with_counts(ctx.db()).await?;
-    ctx.render(
-        "galleries/index.html",
-        context! { galleries, seo_title => "Gallery - SysAdmin Journal", seo_description => "Photo collections" },
-    )
+    let base = ctx.base();
+    let seo = Seo::new(&base, "Gallery - SysAdmin Journal", "Photo collections");
+    let content = render(GalleriesIndex { galleries })?;
+    ctx.page(&base, &seo, None, content)
 }
 
 /// `GET /gallery/{slug}`.
@@ -269,22 +253,29 @@ pub async fn gallery(ctx: Ctx, Path(slug): Path<String>) -> Result<Response, App
         .ok_or(AppError::NotFound)?
         .with_images(db)
         .await?;
-    let seo_title = format!("{} - SysAdmin Journal", gallery.gallery.title);
-    let seo_description = gallery
-        .gallery
-        .description
-        .clone()
-        .filter(|s| !s.is_empty())
-        .unwrap_or_else(|| gallery.gallery.title.clone());
-    ctx.render(
-        "galleries/show.html",
-        context! { gallery, seo_title, seo_description },
-    )
+    let base = ctx.base();
+    let seo = Seo::new(
+        &base,
+        format!("{} - SysAdmin Journal", gallery.title),
+        gallery
+            .description
+            .clone()
+            .filter(|s| !s.is_empty())
+            .unwrap_or_else(|| gallery.title.clone()),
+    );
+    let content = render(GalleryShow { gallery })?;
+    ctx.page(&base, &seo, None, content)
 }
 
 /// `GET /brand-system` — the static design reference page.
 pub async fn brand_system(ctx: Ctx) -> Result<Response, AppError> {
-    ctx.render("brand-system.html", context! {})
+    let base = ctx.base();
+    let content = render(BrandSystem)?;
+    let html = render(BrandLayout {
+        base: &base,
+        content,
+    })?;
+    Ok(axum::response::Html(html).into_response())
 }
 
 impl PostQuery {

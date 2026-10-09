@@ -1,5 +1,4 @@
-use axum::response::{IntoResponse, Redirect, Response};
-use minijinja::context;
+use axum::response::{Html, IntoResponse, Redirect, Response};
 
 use crate::http::form::FormData;
 use crate::http::middleware::{forget_cookie, remember_cookie};
@@ -7,13 +6,16 @@ use crate::http::validation::Validator;
 use crate::http::{AppError, Ctx};
 use crate::models::user::User;
 use crate::support::text;
+use crate::views::pages::Login;
+use crate::views::render;
 
 /// `GET /login`.
 pub async fn show_login(ctx: Ctx) -> Result<Response, AppError> {
     if ctx.user.is_some() {
         return Ok(Redirect::to("/dashboard").into_response());
     }
-    ctx.render("auth/login.html", context! {})
+    let base = ctx.base();
+    Ok(Html(render(Login { base: &base })?).into_response())
 }
 
 /// `POST /login`.

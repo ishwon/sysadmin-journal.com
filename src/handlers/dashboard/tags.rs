@@ -1,6 +1,5 @@
 use axum::extract::Path;
 use axum::response::Response;
-use minijinja::context;
 
 use super::PER_PAGE;
 use crate::http::form::FormData;
@@ -9,36 +8,51 @@ use crate::http::{AppError, Ctx};
 use crate::models::tag::{Tag, TagInput};
 use crate::support::pagination::Page;
 use crate::support::text;
+use crate::views::layouts::DashboardPage;
+use crate::views::pages::{TagForm, TagsAdmin};
+use crate::views::{render, ui};
 
 /// `GET /dashboard/tags`.
 pub async fn index(ctx: Ctx) -> Result<Response, AppError> {
-    let page = ctx.page();
+    let page = ctx.page_number();
     let (tags, total) = Tag::paginate_with_counts(ctx.db(), PER_PAGE, page).await?;
     let tags = Page::new(tags, total, PER_PAGE, page, &ctx.path, &ctx.query);
-    ctx.render_dashboard(
-        "dashboard/tags/index.html",
-        context! { title => "Tags", page_title => "Tags", tags },
-    )
-    .await
+    let base = ctx.base();
+    let content = render(TagsAdmin { base: &base, tags })?;
+    let page = DashboardPage::new("Tags", content).heading("Tags").actions(
+        ui::button("primary")
+            .size("sm")
+            .href("/dashboard/tags/create")
+            .html("New tag"),
+    );
+    ctx.dashboard(&base, page).await
+}
+
+async fn form_page(ctx: &Ctx, title: &str, tag: Option<Tag>) -> Result<Response, AppError> {
+    let (action, editing) = match &tag {
+        Some(t) => (format!("/dashboard/tags/{}", t.id), true),
+        None => ("/dashboard/tags".to_string(), false),
+    };
+    let base = ctx.base();
+    let content = render(TagForm {
+        base: &base,
+        tag,
+        action,
+        editing,
+    })?;
+    ctx.dashboard(&base, DashboardPage::new(title, content))
+        .await
 }
 
 /// `GET /dashboard/tags/create`.
 pub async fn create(ctx: Ctx) -> Result<Response, AppError> {
-    ctx.render_dashboard(
-        "dashboard/tags/create.html",
-        context! { title => "New Tag", tag => minijinja::Value::UNDEFINED },
-    )
-    .await
+    form_page(&ctx, "New Tag", None).await
 }
 
 /// `GET /dashboard/tags/{id}/edit`.
 pub async fn edit(ctx: Ctx, Path(id): Path<i64>) -> Result<Response, AppError> {
     let tag = Tag::find(ctx.db(), id).await?.ok_or(AppError::NotFound)?;
-    ctx.render_dashboard(
-        "dashboard/tags/edit.html",
-        context! { title => "Edit Tag", tag },
-    )
-    .await
+    form_page(&ctx, "Edit Tag", Some(tag)).await
 }
 
 async fn validate(

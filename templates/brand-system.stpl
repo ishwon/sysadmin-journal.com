@@ -1,0 +1,607 @@
+<div class="flex min-h-screen">
+    <%# Side nav %>
+    <aside class="sticky top-0 hidden lg:flex h-screen w-60 flex-col border-r border-surface-200 bg-white dark:bg-ink-900 dark:border-ink-700">
+        <div class="px-6 py-6 border-b border-surface-200 dark:border-ink-700">
+            <p class="text-xs uppercase tracking-wider text-ink-500 dark:text-ink-400 font-semibold">SysAdmin Journal</p>
+            <h1 class="mt-1 text-lg font-bold text-ink-900 dark:text-ink-50">Brand System</h1>
+        </div>
+        <nav class="flex-1 overflow-y-auto py-3 text-sm">
+            <% let sections = [
+                ("foundations", "Foundations"), ("palette", "Palette"), ("typography", "Typography"), ("elevation", "Shadows & radius"),
+                ("buttons", "Buttons"), ("forms", "Form controls"), ("badges", "Badges"), ("alerts", "Alerts"), ("toasts", "Toasts"),
+                ("cards", "Cards"), ("stats", "Stat cards"), ("modals", "Modals"), ("dropdowns", "Dropdowns"), ("tabs", "Tabs"),
+                ("tables", "Tables"), ("breadcrumbs", "Breadcrumbs"), ("pagination", "Pagination"), ("empty-states", "Empty states"),
+                ("skeletons", "Skeletons"), ("dashboard-preview", "Dashboard preview"), ("blog-preview", "Blog preview"),
+            ]; %>
+            <% for (id, label) in sections { %>
+                <a href="#<%= id %>" class="block px-6 py-1.5 text-ink-600 hover:text-accent-700 hover:bg-surface-50 dark:text-ink-300 dark:hover:bg-ink-800 dark:hover:text-accent-400 transition-colors">
+                    <%= label %>
+                </a>
+            <% } %>
+        </nav>
+        <div class="p-6 border-t border-surface-200 dark:border-ink-700">
+            <button @click="dark = !dark; localStorage.theme = dark ? 'dark' : 'light'"
+                class="inline-flex items-center gap-2 text-sm text-ink-600 hover:text-ink-900 dark:text-ink-300 dark:hover:text-ink-50">
+                <svg x-show="!dark" class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/></svg>
+                <svg x-show="dark" class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zM18 10a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1zM5.05 6.464l-.707-.707a1 1 0 00-1.414 1.414l.707.707a1 1 0 001.414-1.414zM2 10a1 1 0 011-1h1a1 1 0 110 2H3a1 1 0 01-1-1zm8 8a1 1 0 01-1-1v-1a1 1 0 112 0v1a1 1 0 01-1 1zm-5.657-2.343a1 1 0 00-1.414-1.414l-.707.707a1 1 0 101.414 1.414l.707-.707zm11.314-.707a1 1 0 011.414 1.414l-.707.707a1 1 0 01-1.414-1.414l.707-.707z" clip-rule="evenodd"/></svg>
+                <span x-text="dark ? 'Dark mode' : 'Light mode'"></span>
+            </button>
+        </div>
+    </aside>
+
+    <%# Content %>
+    <main class="flex-1 min-w-0">
+        <%# Hero %>
+        <section id="foundations" class="border-b border-surface-200 dark:border-ink-800 bg-white dark:bg-ink-900">
+            <div class="max-w-5xl mx-auto px-6 lg:px-10 py-16">
+                <p class="text-xs uppercase tracking-wider font-semibold text-accent-700 dark:text-accent-400">v1.0 — Preview</p>
+                <h1 class="mt-3 text-4xl md:text-5xl font-extrabold tracking-tight text-ink-900 dark:text-ink-50">
+                    A brand system for SysAdmin&nbsp;Journal.
+                </h1>
+                <p class="mt-4 text-lg text-ink-600 dark:text-ink-300 max-w-2xl font-serif">
+                    Every token, surface and control the backoffice and public blog will draw from.
+                    Flip dark mode in the sidebar to pressure-test every component in both schemes.
+                </p>
+                <div class="mt-8 flex flex-wrap items-center gap-3">
+                    <%- ui::button("primary").href("#buttons").html("Browse components") %>
+                    <%- ui::button("secondary").href("#palette").html("See palette") %>
+                    <%- ui::badge("success", "md", "Token-driven") %>
+                    <%- ui::badge("info", "md", "Dark mode ready") %>
+                </div>
+            </div>
+        </section>
+
+        <div class="max-w-5xl mx-auto px-6 lg:px-10 py-12 space-y-16">
+
+            <%# Palette %>
+            <section id="palette">
+                <%- ui::section_header("Color", "Palette", "The five brand hexes, expanded into usable ramps. Click a swatch hex to copy.") %>
+                <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <% let ramps: [(&str, &[(&str, &str)]); 5] = [
+                        ("Ink — Primary (#27374D)", &[("50", "bg-ink-50"), ("100", "bg-ink-100"), ("200", "bg-ink-200"), ("300", "bg-ink-300"), ("400", "bg-ink-400"), ("500", "bg-ink-500"), ("600", "bg-ink-600"), ("700", "bg-ink-700"), ("800", "bg-ink-800"), ("900", "bg-ink-900"), ("950", "bg-ink-950")]),
+                        ("Accent — Success (#10b981)", &[("50", "bg-accent-50"), ("100", "bg-accent-100"), ("200", "bg-accent-200"), ("300", "bg-accent-300"), ("400", "bg-accent-400"), ("500", "bg-accent-500"), ("600", "bg-accent-600"), ("700", "bg-accent-700"), ("800", "bg-accent-800"), ("900", "bg-accent-900")]),
+                        ("Surface (#DDE6ED)", &[("50", "bg-surface-50"), ("100", "bg-surface-100"), ("200", "bg-surface-200"), ("300", "bg-surface-300"), ("400", "bg-surface-400"), ("500", "bg-surface-500")]),
+                        ("Danger (#EA5455)", &[("50", "bg-danger-50"), ("100", "bg-danger-100"), ("200", "bg-danger-200"), ("300", "bg-danger-300"), ("400", "bg-danger-400"), ("500", "bg-danger-500"), ("600", "bg-danger-600"), ("700", "bg-danger-700"), ("900", "bg-danger-900")]),
+                        ("Warning (#F66B0E)", &[("50", "bg-warning-50"), ("100", "bg-warning-100"), ("200", "bg-warning-200"), ("300", "bg-warning-300"), ("400", "bg-warning-400"), ("500", "bg-warning-500"), ("600", "bg-warning-600"), ("700", "bg-warning-700"), ("900", "bg-warning-900")]),
+                    ]; %>
+                    <% for (name, steps) in ramps { %>
+                        <% let card = ui::card().title(name).padding("sm"); %>
+                        <%- card.open() %>
+                            <div class="grid grid-cols-6 md:grid-cols-11 gap-1">
+                                <% for (step, class) in steps.iter() { %>
+                                    <div class="flex flex-col items-center">
+                                        <div class="<%= class %> h-12 w-full rounded-sm ring-1 ring-black/5"></div>
+                                        <span class="mt-1 text-[10px] text-ink-500 dark:text-ink-400"><%= step %></span>
+                                    </div>
+                                <% } %>
+                            </div>
+                        <%- card.close() %>
+                    <% } %>
+                </div>
+
+                <%# Semantic swatches %>
+                <div class="mt-6 grid grid-cols-2 md:grid-cols-5 gap-4">
+                    <% for (hex, label, bg, fg) in [("#27374D", "Ink", "bg-ink-800", "text-white"), ("#10b981", "Accent", "bg-accent-500", "text-white"), ("#DDE6ED", "Surface", "bg-surface-200", "text-ink-800"), ("#EA5455", "Danger", "bg-danger-500", "text-white"), ("#F66B0E", "Warning", "bg-warning-500", "text-white")] { %>
+                        <div class="<%= bg %> <%= fg %> rounded-lg p-5 shadow-sm">
+                            <p class="text-xs uppercase tracking-wide opacity-80"><%= label %></p>
+                            <p class="mt-2 font-mono text-sm"><%= hex %></p>
+                        </div>
+                    <% } %>
+                </div>
+            </section>
+
+            <%# Typography %>
+            <section id="typography">
+                <%- ui::section_header("Text", "Typography", "Instrument Sans for UI. Lora serif for long-form reading. JetBrains Mono for code.") %>
+                <% let type_card = ui::card().padding("lg").class("mt-6 space-y-6"); %>
+                <%- type_card.open() %>
+                    <div>
+                        <p class="text-xs uppercase tracking-wider text-ink-500 dark:text-ink-400">Display · 48px / 800</p>
+                        <p class="text-4xl md:text-5xl font-extrabold tracking-tight text-ink-900 dark:text-ink-50">Run a command. Ship a post.</p>
+                    </div>
+                    <div>
+                        <p class="text-xs uppercase tracking-wider text-ink-500 dark:text-ink-400">Heading 1 · 30px / 700</p>
+                        <h1 class="text-3xl font-bold tracking-tight text-ink-900 dark:text-ink-50">The quick brown sysadmin journals a post</h1>
+                    </div>
+                    <div>
+                        <p class="text-xs uppercase tracking-wider text-ink-500 dark:text-ink-400">Heading 2 · 24px / 600</p>
+                        <h2 class="text-2xl font-semibold text-ink-900 dark:text-ink-50">Migrations, monitoring, and Mondays</h2>
+                    </div>
+                    <div>
+                        <p class="text-xs uppercase tracking-wider text-ink-500 dark:text-ink-400">Lead · 18px / 400 · serif</p>
+                        <p class="font-serif text-lg text-ink-600 dark:text-ink-300">The subtle art of running a Linux box you only SSH into once a quarter.</p>
+                    </div>
+                    <div>
+                        <p class="text-xs uppercase tracking-wider text-ink-500 dark:text-ink-400">Body · 18px / 400 · serif · leading 1.75</p>
+                        <p class="font-serif text-lg leading-[1.75] text-ink-800 dark:text-ink-100 max-w-[68ch]">
+                            Serif body text at this scale eases long-form reading. At the openSUSE booth in Nuremberg last spring, I convinced myself that the only
+                            real measure of a good blog post is whether a tired oncall engineer can finish it at 3 a.m. without squinting.
+                        </p>
+                    </div>
+                    <div>
+                        <p class="text-xs uppercase tracking-wider text-ink-500 dark:text-ink-400">UI · 14px / 500</p>
+                        <p class="text-sm font-medium text-ink-700 dark:text-ink-200">Create post · Save draft · Schedule</p>
+                    </div>
+                    <div>
+                        <p class="text-xs uppercase tracking-wider text-ink-500 dark:text-ink-400">Micro · 12px uppercase tracking-wide</p>
+                        <p class="text-xs uppercase tracking-wide text-ink-500 dark:text-ink-400">Published · 22 April 2026</p>
+                    </div>
+                    <div>
+                        <p class="text-xs uppercase tracking-wider text-ink-500 dark:text-ink-400">Mono</p>
+                        <p class="font-mono text-sm text-ink-800 dark:text-ink-100">$ systemctl status nginx</p>
+                    </div>
+                <%- type_card.close() %>
+            </section>
+
+            <%# Elevation %>
+            <section id="elevation">
+                <%- ui::section_header("Surface", "Shadows & radius", "Tinted with ink so shadows feel like the same material, never grey fog.") %>
+                <div class="mt-6 grid grid-cols-2 md:grid-cols-5 gap-4">
+                    <% for name in ["xs", "sm", "md", "lg", "xl"] { %>
+                        <div class="flex flex-col items-center gap-2">
+                            <div class="shadow-<%= name %> h-24 w-full rounded-lg bg-white dark:bg-ink-900"></div>
+                            <span class="text-xs font-medium text-ink-600 dark:text-ink-300">shadow-<%= name %></span>
+                        </div>
+                    <% } %>
+                </div>
+                <div class="mt-8 grid grid-cols-2 md:grid-cols-5 gap-4">
+                    <% for r in ["xs", "sm", "md", "lg", "xl"] { %>
+                        <div class="flex flex-col items-center gap-2">
+                            <div class="rounded-<%= r %> h-24 w-full bg-ink-800"></div>
+                            <span class="text-xs font-medium text-ink-600 dark:text-ink-300">rounded-<%= r %></span>
+                        </div>
+                    <% } %>
+                </div>
+            </section>
+
+            <%# Buttons %>
+            <section id="buttons">
+                <%- ui::section_header("Controls", "Buttons", "One primary action per view. Danger is for destructive only.") %>
+                <% let buttons_card = ui::card().padding("lg").class("mt-6 space-y-6"); %>
+                <%- buttons_card.open() %>
+                    <div>
+                        <p class="text-xs uppercase tracking-wide text-ink-500 dark:text-ink-400 font-medium mb-3">Variants · size md</p>
+                        <div class="flex flex-wrap items-center gap-3">
+                            <%- ui::button("primary").html("Primary action") %>
+                            <%- ui::button("secondary").html("Secondary") %>
+                            <%- ui::button("ghost").html("Ghost") %>
+                            <%- ui::button("ink").html("Ink") %>
+                            <%- ui::button("warning").html("Warning") %>
+                            <%- ui::button("danger").html("Delete permanently") %>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-xs uppercase tracking-wide text-ink-500 dark:text-ink-400 font-medium mb-3">Sizes</p>
+                        <div class="flex flex-wrap items-center gap-3">
+                            <%- ui::button("primary").size("sm").html("Small") %>
+                            <%- ui::button("primary").size("md").html("Medium") %>
+                            <%- ui::button("primary").size("lg").html("Large") %>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-xs uppercase tracking-wide text-ink-500 dark:text-ink-400 font-medium mb-3">With icons</p>
+                        <div class="flex flex-wrap items-center gap-3">
+                            <%- ui::button("primary").html(r#"<svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"/></svg> New post"#) %>
+                            <%- ui::button("secondary").html(r#"Preview <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>"#) %>
+                            <%- ui::button("danger").html(r#"<svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9z" clip-rule="evenodd"/></svg> Delete"#) %>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-xs uppercase tracking-wide text-ink-500 dark:text-ink-400 font-medium mb-3">States</p>
+                        <div class="flex flex-wrap items-center gap-3">
+                            <%- ui::button("primary").attrs("disabled").html("Disabled") %>
+                            <%- ui::button("primary").loading().html("Saving…") %>
+                            <%- ui::button("secondary").attrs("disabled").html("Disabled") %>
+                        </div>
+                    </div>
+                <%- buttons_card.close() %>
+            </section>
+
+            <%# Forms %>
+            <section id="forms">
+                <%- ui::section_header("Controls", "Form controls", "Every input supports label, hint, error, and dark mode.") %>
+                <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <% let text_card = ui::card().title("Text & friends").padding("lg"); %>
+                    <%- text_card.open() %>
+                        <div class="space-y-4">
+                            <%- ui::input("title").label("Post title").value("Migrating from Ghost to Laravel").hint("Shown in listings and OG metadata.").html() %>
+                            <%- ui::input("slug").label("Slug").value("migrating-from-ghost").prefix("/posts/").html() %>
+                            <%- ui::input("url").label("Canonical URL").kind("url").value("https://sysadmin-journal.com").suffix(".com").html() %>
+                            <%- ui::input("email").label("Email").kind("email").value("").error("Enter a valid email address.").html() %>
+                            <%- ui::input("disabled").label("Read-only slug").value("permalocked").disabled().html() %>
+                            <%- ui::textarea("excerpt").label("Excerpt").hint("Plain text, 160 characters max.").rows(3).value("A short hands-on guide to swapping your Ghost install for Laravel without dropping any URLs.").html() %>
+                            <%- ui::select("status").label("Status").options(&[("draft", "Draft"), ("scheduled", "Scheduled"), ("published", "Published"), ("archived", "Archived")]).selected("published").html() %>
+                        </div>
+                    <%- text_card.close() %>
+                    <% let choices_card = ui::card().title("Choices").padding("lg"); %>
+                    <%- choices_card.open() %>
+                        <div class="space-y-6">
+                            <div>
+                                <p class="text-sm font-medium text-ink-800 dark:text-ink-100 mb-2">Checkbox group — Tags</p>
+                                <div class="space-y-2">
+                                    <%- ui::checkbox("tags[linux]", Some("Linux"), true, Some("System administration, distros, command line.")) %>
+                                    <%- ui::checkbox("tags[sanskrit]", Some("Sanskrit"), false, Some("Language essays and translations.")) %>
+                                    <%- ui::checkbox("tags[openSUSE]", Some("openSUSE"), true, Some("Advocacy and conference notes.")) %>
+                                    <%- ui::checkbox("tags[devops]", Some("DevOps"), false, None) %>
+                                </div>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-ink-800 dark:text-ink-100 mb-2">Radio group — Content format</p>
+                                <div class="flex flex-wrap gap-4">
+                                    <%- ui::radio("format", "html", Some("HTML"), false, "") %>
+                                    <%- ui::radio("format", "markdown", Some("Markdown"), true, "") %>
+                                    <%- ui::radio("format", "mdx", Some("MDX"), false, "") %>
+                                </div>
+                            </div>
+                            <div class="space-y-3">
+                                <p class="text-sm font-medium text-ink-800 dark:text-ink-100">Toggles</p>
+                                <%- ui::toggle("featured", Some("Feature on homepage"), Some("Pins this post above the chronological feed."), true) %>
+                                <%- ui::toggle("comments", Some("Allow comments"), None, false) %>
+                                <%- ui::toggle("newsletter", Some("Send to newsletter"), Some("Queues on save. Cannot be undone."), false) %>
+                            </div>
+                        </div>
+                    <%- choices_card.close() %>
+                </div>
+            </section>
+
+            <%# Badges %>
+            <section id="badges">
+                <%- ui::section_header("Feedback", "Badges", "Statuses, tags, and categorical labels.") %>
+                <% let badges_card = ui::card().padding("lg").class("mt-6 space-y-4"); %>
+                <%- badges_card.open() %>
+                    <div class="flex flex-wrap items-center gap-3">
+                        <%- ui::badge("neutral", "md", "Neutral") %>
+                        <%- ui::badge("success", "md", "Published") %>
+                        <%- ui::badge("warning", "md", "Scheduled") %>
+                        <%- ui::badge("danger", "md", "Deleted") %>
+                        <%- ui::badge("info", "md", "Draft") %>
+                        <%- ui::badge("ink", "md", "Pinned") %>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-3">
+                        <%- ui::badge("success", "md", "Live") %>
+                        <%- ui::badge("warning", "md", "Queued") %>
+                        <%- ui::badge("danger", "md", "Failed") %>
+                        <%- ui::badge("info", "md", "Draft") %>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-3">
+                        <%- ui::badge("success", "sm", "sm") %>
+                        <%- ui::badge("success", "md", "md") %>
+                        <%- ui::badge("success", "lg", "lg") %>
+                    </div>
+                <%- badges_card.close() %>
+            </section>
+
+            <%# Alerts %>
+            <section id="alerts">
+                <%- ui::section_header("Feedback", "Alerts", "Inline messages. Replace the flash divs in the current dashboard layout.") %>
+                <div class="mt-6 space-y-3">
+                    <%- ui::alert("success", Some("Post published"), false, r#"Your post was saved and is now live at <span class="font-mono">/migrating-from-ghost</span>."#) %>
+                    <%- ui::alert("warning", Some("Scheduled for later"), false, "This post will go live on 25 April 2026 at 09:00 UTC. You can still edit it until then.") %>
+                    <%- ui::alert("danger", Some("Something broke"), true, r#"We couldn't reach the media bucket. Check the <span class="underline">storage credentials</span> and retry."#) %>
+                    <%- ui::alert("info", None, false, "You have <strong>3 drafts</strong> older than a month. Tidy them from the Posts screen.") %>
+                </div>
+            </section>
+
+            <%# Toasts %>
+            <section id="toasts">
+                <%- ui::section_header("Feedback", "Toasts", "Ephemeral, auto-dismissing. Trigger from any Alpine context.") %>
+                <% let toasts_card = ui::card().padding("lg").class("mt-6"); %>
+                <%- toasts_card.open() %>
+                    <div class="flex flex-wrap gap-3">
+                        <%- ui::button("primary").attrs(r#"x-on:click="$dispatch('toast-success')""#).html("Fire success") %>
+                        <%- ui::button("warning").attrs(r#"x-on:click="$dispatch('toast-warning')""#).html("Fire warning") %>
+                        <%- ui::button("danger").attrs(r#"x-on:click="$dispatch('toast-danger')""#).html("Fire error") %>
+                        <%- ui::button("secondary").attrs(r#"x-on:click="$dispatch('toast-info')""#).html("Fire info") %>
+                    </div>
+                    <p class="mt-3 text-xs text-ink-500 dark:text-ink-400">Appears bottom-right. Auto-dismisses after 4.5s.</p>
+                <%- toasts_card.close() %>
+                <div class="fixed bottom-6 right-6 z-50 space-y-3 pointer-events-none">
+                    <%- ui::toast("success", "Saved", "Your draft was saved 2 seconds ago.", "toast-success") %>
+                    <%- ui::toast("warning", "Heads up", "You're editing a published post.", "toast-warning") %>
+                    <%- ui::toast("danger", "Save failed", "Network dropped. Your text is in localStorage.", "toast-danger") %>
+                    <%- ui::toast("info", "Autosave on", "We'll back you up every 30s.", "toast-info") %>
+                </div>
+            </section>
+
+            <%# Cards %>
+            <section id="cards">
+                <%- ui::section_header("Layout", "Cards", "The primary container for chunks of content.") %>
+                <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <%- ui::card().padding("md").html(r#"<p class="text-ink-700 dark:text-ink-200">Simple content card. No header, no footer, just padding.</p>"#) %>
+                    <% let card_actions = format!("{}{}", ui::button("ghost").size("sm").html("Cancel"), ui::button("primary").size("sm").html("Save")); %>
+                    <%- ui::card().title("With title + actions").subtitle("Description sits under the title.").actions(card_actions).html(r#"<p class="text-ink-700 dark:text-ink-200">A typical form container. Drops action buttons into the header.</p>"#) %>
+                    <% let footer = "<div class=\"flex items-center justify-between text-xs text-ink-500 dark:text-ink-400\"><span>Last edited 4 minutes ago</span><a href=\"#\" class=\"text-accent-700 hover:underline dark:text-accent-400\">Revision history</a></div>".to_string(); %>
+                    <%- ui::card().title("With footer").hoverable().footer(footer).html(r#"<p class="text-ink-700 dark:text-ink-200">Hover me — subtle elevation lift.</p>"#) %>
+                    <% let preview_card = ui::card().title("Post preview"); %>
+                    <%- preview_card.open() %>
+                        <article>
+                            <div class="flex items-center gap-2 mb-2">
+                                <%- ui::badge("success", "sm", "Linux") %>
+                                <span class="text-xs text-ink-500">3 min read</span>
+                            </div>
+                            <h3 class="text-lg font-semibold text-ink-900 dark:text-ink-50">How I survived an out-of-band kernel panic at 2am</h3>
+                            <p class="mt-2 text-sm text-ink-600 dark:text-ink-300">The story of a single SSH session, three coffees, and the sysctl flag I should have set years ago.</p>
+                        </article>
+                    <%- preview_card.close() %>
+                </div>
+            </section>
+
+            <%# Stat cards %>
+            <section id="stats">
+                <%- ui::section_header("Dashboard", "Stat cards", "Headline numbers with trend.") %>
+                <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <%- ui::stat_card("Posts", "184", Some("+12 this month"), Some("up")) %>
+                    <%- ui::stat_card("Drafts", "7", Some("+3 this week"), Some("flat")) %>
+                    <%- ui::stat_card("Broken links", "2", Some("−4 this week"), Some("down")) %>
+                    <%- ui::stat_card("Monthly readers", "42.1k", Some("+8.6%"), Some("up")) %>
+                </div>
+            </section>
+
+            <%# Modal %>
+            <section id="modals">
+                <%- ui::section_header("Overlay", "Modals", "Alpine-powered, opens via window event. Esc / backdrop-click to close.") %>
+                <% let modals_card = ui::card().padding("lg").class("mt-6"); %>
+                <%- modals_card.open() %>
+                    <div class="flex flex-wrap gap-3">
+                        <%- ui::button("danger").attrs(r#"x-on:click="$dispatch('open-modal-delete')""#).html("Delete post…") %>
+                        <%- ui::button("secondary").attrs(r#"x-on:click="$dispatch('open-modal-preview')""#).html("Open preview") %>
+                    </div>
+                <%- modals_card.close() %>
+
+                <%- ui::modal_open("delete", Some("Delete this post?"), None, "md") %>
+                    <p>This permanently removes <span class="font-semibold text-ink-900 dark:text-ink-50">"Migrating from Ghost"</span> and every redirect pointing at it. This cannot be undone.</p>
+                <%- ui::modal_close(Some(format!("{}{}", ui::button("ghost").attrs(r#"x-on:click="$dispatch('close-modal-delete')""#).html("Cancel"), ui::button("danger").html("Yes, delete permanently")))) %>
+
+                <%- ui::modal_open("preview", Some("Preview in responsive frame"), None, "lg") %>
+                    <div class="rounded-md border border-surface-200 bg-surface-50 h-64 flex items-center justify-center text-ink-400 dark:bg-ink-800 dark:border-ink-700">
+                        <span class="font-mono text-sm">[ iframe preview ]</span>
+                    </div>
+                <%- ui::modal_close(Some(format!("{}{}", ui::button("ghost").attrs(r#"x-on:click="$dispatch('close-modal-preview')""#).html("Close"), ui::button("primary").html("Publish")))) %>
+            </section>
+
+            <%# Dropdown %>
+            <section id="dropdowns">
+                <%- ui::section_header("Overlay", "Dropdowns", "For row actions, user menus, and filters.") %>
+                <% let dropdowns_card = ui::card().padding("lg").class("mt-6"); %>
+                <%- dropdowns_card.open() %>
+                    <div class="flex flex-wrap items-center gap-4">
+                        <% let actions_trigger = ui::button("secondary").html(r#"Actions <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.06l3.71-3.83a.75.75 0 111.08 1.04l-4.25 4.38a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>"#); %>
+                        <%- ui::dropdown_open(&actions_trigger, "right", "48", "down", "inline-block") %>
+                            <%- ui::dropdown_item(Some("#"), "default", "button", "Edit post") %>
+                            <%- ui::dropdown_item(Some("#"), "default", "button", "Duplicate") %>
+                            <%- ui::dropdown_item(Some("#"), "default", "button", "View public page") %>
+                            <div class="my-1 border-t border-surface-200 dark:border-ink-700"></div>
+                            <%- ui::dropdown_item(None, "danger", "button", "Delete…") %>
+                        <%- ui::dropdown_close() %>
+
+                        <% let user_trigger = r#"<button type="button" class="inline-flex items-center gap-2 rounded-full border border-ink-200 bg-white px-2 py-1 text-sm hover:border-ink-300 dark:bg-ink-900 dark:border-ink-700"><span class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-ink-800 text-white text-xs font-semibold">IS</span><span class="text-ink-800 dark:text-ink-100 pr-1">Ish Sookun</span></button>"#; %>
+                        <%- ui::dropdown_open(user_trigger, "left", "56", "down", "inline-block") %>
+                            <%- ui::dropdown_item(Some("#"), "default", "button", "Profile") %>
+                            <%- ui::dropdown_item(Some("#"), "default", "button", "API tokens") %>
+                            <div class="my-1 border-t border-surface-200 dark:border-ink-700"></div>
+                            <%- ui::dropdown_item(None, "danger", "button", "Sign out") %>
+                        <%- ui::dropdown_close() %>
+                    </div>
+                <%- dropdowns_card.close() %>
+            </section>
+
+            <%# Tabs %>
+            <section id="tabs">
+                <%- ui::section_header("Navigation", "Tabs", "For switching between sibling views.") %>
+                <% let tabs_card = ui::card().padding("lg").class("mt-6"); %>
+                <%- tabs_card.open() %>
+                    <%- ui::tabs_open(&[("editor", "Editor"), ("preview", "Preview"), ("seo", "SEO"), ("settings", "Settings")], "editor") %>
+                        <div x-show="active === 'editor'">
+                            <p class="text-sm text-ink-700 dark:text-ink-200">Markdown editor sits here. Swap easily to the preview tab to eyeball rendering.</p>
+                        </div>
+                        <div x-show="active === 'preview'" x-cloak>
+                            <p class="text-sm text-ink-700 dark:text-ink-200">Live-rendered HTML of your current markdown.</p>
+                        </div>
+                        <div x-show="active === 'seo'" x-cloak>
+                            <p class="text-sm text-ink-700 dark:text-ink-200">Meta title, description, OG image, Twitter image.</p>
+                        </div>
+                        <div x-show="active === 'settings'" x-cloak>
+                            <p class="text-sm text-ink-700 dark:text-ink-200">Slug, status, author, publish date.</p>
+                        </div>
+                    <%- ui::tabs_close() %>
+                <%- tabs_card.close() %>
+            </section>
+
+            <%# Tables %>
+            <section id="tables">
+                <%- ui::section_header("Data", "Tables", "The workhorse of the backoffice. Sortable headers, row badges, row-end dropdown.") %>
+                <div class="mt-6">
+                    <%- ui::table_open(&["Title", "Tags", "Status", "Updated", ""]) %>
+                        <% let rows: [(&str, &[&str], &str, &str, &str); 5] = [
+                            ("Migrating from Ghost to Laravel", &["Linux", "DevOps"], "success", "Published", "2 hours ago"),
+                            ("openSUSE Leap 16 at a glance", &["openSUSE"], "success", "Published", "Yesterday"),
+                            ("Configuring nftables for a tiny VPS", &["Linux"], "warning", "Scheduled", "in 3 days"),
+                            ("Why Sanskrit teaches you systems thinking", &["Sanskrit"], "info", "Draft", "Last week"),
+                            ("Post-mortem: the 2am kernel panic", &["Linux"], "danger", "Archived", "3 weeks ago"),
+                        ]; %>
+                        <% for (title, tags, tone, status, updated) in rows { %>
+                            <tr class="hover:bg-surface-50 dark:hover:bg-ink-800/60 transition-colors">
+                                <td class="px-4 py-3">
+                                    <p class="font-medium text-ink-900 dark:text-ink-50"><%= title %></p>
+                                    <p class="text-xs text-ink-500 dark:text-ink-400 font-mono mt-0.5">/<%= slug(title) %></p>
+                                </td>
+                                <td class="px-4 py-3">
+                                    <div class="flex flex-wrap gap-1">
+                                        <% for t in tags.iter() { %>
+                                            <%- ui::badge("neutral", "sm", t) %>
+                                        <% } %>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3"><%- ui::badge(tone, "md", status) %></td>
+                                <td class="px-4 py-3 text-ink-500 dark:text-ink-400 whitespace-nowrap"><%= updated %></td>
+                                <td class="px-4 py-3 text-right">
+                                    <% let row_trigger = r#"<button type="button" class="inline-flex h-8 w-8 items-center justify-center rounded-md text-ink-500 hover:bg-surface-100 dark:text-ink-400 dark:hover:bg-ink-800" aria-label="Row actions"><svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor"><path d="M10 6a2 2 0 100-4 2 2 0 000 4zm0 6a2 2 0 100-4 2 2 0 000 4zm0 6a2 2 0 100-4 2 2 0 000 4z"/></svg></button>"#; %>
+                                    <%- ui::dropdown_open(row_trigger, "right", "48", "down", "inline-block") %>
+                                        <%- ui::dropdown_item(None, "default", "button", "Edit") %>
+                                        <%- ui::dropdown_item(None, "default", "button", "Duplicate") %>
+                                        <%- ui::dropdown_item(None, "danger", "button", "Delete") %>
+                                    <%- ui::dropdown_close() %>
+                                </td>
+                            </tr>
+                        <% } %>
+                    <%- ui::table_close(Some(ui::pagination(1, 9))) %>
+                </div>
+            </section>
+
+            <%# Breadcrumbs %>
+            <section id="breadcrumbs">
+                <%- ui::section_header("Navigation", "Breadcrumbs", "Shows hierarchy for deep screens.") %>
+                <%- ui::card().padding("lg").class("mt-6").html(&ui::breadcrumbs(&[ui::crumb("Dashboard", Some("#")), ui::crumb("Posts", Some("#")), ui::crumb("Migrating from Ghost to Laravel", None)])) %>
+            </section>
+
+            <%# Pagination %>
+            <section id="pagination">
+                <%- ui::section_header("Navigation", "Pagination", "Under tables and lists.") %>
+                <%- ui::card().padding("lg").class("mt-6").html(&ui::pagination(3, 12)) %>
+            </section>
+
+            <%# Empty state %>
+            <section id="empty-states">
+                <%- ui::section_header("Feedback", "Empty states", "Tell the user what's missing and how to move forward.") %>
+                <div class="mt-6">
+                    <%- ui::empty_state("No scheduled posts", Some("Schedule a draft to have it auto-publish at a future date. We'll email you when it goes live."), Some(ui::button("primary").html("Create post"))) %>
+                </div>
+            </section>
+
+            <%# Skeleton %>
+            <section id="skeletons">
+                <%- ui::section_header("Feedback", "Skeletons", "While content loads — one row per visual element, subtle pulse.") %>
+                <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <%- ui::card().padding("md").html(&format!(r#"<div class="flex items-start gap-3">{}<div class="flex-1 space-y-2">{}{}{}</div></div>"#, ui::skeleton("avatar", None), ui::skeleton("heading", None), ui::skeleton("line", None), ui::skeleton("line", Some("75%")))) %>
+                    <%- ui::card().padding("md").html(&format!(r#"{}<div class="mt-4 space-y-2">{}{}{}</div>"#, ui::skeleton("thumbnail", None), ui::skeleton("heading", None), ui::skeleton("line", None), ui::skeleton("line", Some("60%")))) %>
+                </div>
+            </section>
+
+            <%# Dashboard preview %>
+            <section id="dashboard-preview">
+                <%- ui::section_header("Application", "Dashboard preview", "How the new palette lands on the existing dashboard shell.") %>
+                <div class="mt-6 rounded-xl overflow-hidden border border-surface-200 dark:border-ink-700 shadow-lg">
+                    <div class="grid grid-cols-[220px_1fr] min-h-[520px]">
+                        <aside class="bg-ink-900 text-white">
+                            <div class="px-6 py-5 border-b border-ink-800">
+                                <p class="text-sm font-extrabold">SysAdmin Journal</p>
+                            </div>
+                            <nav class="py-3 text-sm">
+                                <%- ui::nav_item("#", true, r#"<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>"#, None, "Dashboard") %>
+                                <%- ui::nav_item("#", false, r#"<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>"#, None, "Posts") %>
+                                <%- ui::nav_item("#", false, r#"<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>"#, None, "Pages") %>
+                                <%- ui::nav_item("#", false, r#"<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>"#, None, "Galleries") %>
+                                <%- ui::nav_item("#", false, r#"<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z"/></svg>"#, None, "Tags") %>
+                                <%- ui::nav_item("#", false, r#"<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>"#, None, "Users") %>
+                            </nav>
+                        </aside>
+                        <div class="bg-surface-50 dark:bg-ink-950">
+                            <header class="bg-white dark:bg-ink-900 border-b border-surface-200 dark:border-ink-800 px-6 py-4 flex items-center justify-between">
+                                <div>
+                                    <%- ui::breadcrumbs(&[ui::crumb("Dashboard", Some("#")), ui::crumb("Posts", None)]) %>
+                                    <h2 class="mt-1 text-lg font-semibold text-ink-900 dark:text-ink-50">Posts</h2>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <%- ui::button("secondary").size("sm").html("Export CSV") %>
+                                    <%- ui::button("primary").size("sm").html(r#"<svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor"><path d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"/></svg> New post"#) %>
+                                </div>
+                            </header>
+                            <div class="p-6 space-y-4">
+                                <div class="grid grid-cols-3 gap-4">
+                                    <%- ui::stat_card("Published", "184", Some("+12"), Some("up")) %>
+                                    <%- ui::stat_card("Drafts", "7", Some("+3"), Some("flat")) %>
+                                    <%- ui::stat_card("This week", "4", Some("+1"), Some("up")) %>
+                                </div>
+                                <%- ui::alert("success", None, true, r#"Post <strong>"Migrating from Ghost"</strong> was published."#) %>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <%# Blog preview %>
+            <section id="blog-preview">
+                <%- ui::section_header("Public site", "Blog frontend preview", "Serif body + ink chrome + accent links. Reading progress bar sits under the header.") %>
+                <div class="mt-6 rounded-xl overflow-hidden border border-surface-200 dark:border-ink-700 shadow-lg">
+                    <%# Mock header %>
+                    <div class="relative bg-ink-900 text-white">
+                        <div class="max-w-3xl mx-auto px-6 py-4 flex items-center justify-between">
+                            <span class="font-extrabold">SysAdmin Journal</span>
+                            <div class="flex items-center gap-6 text-sm">
+                                <a href="#" class="hover:text-accent-400">About</a>
+                                <a href="#" class="hover:text-accent-400">Linux</a>
+                                <a href="#" class="hover:text-accent-400">Sanskrit</a>
+                                <%- ui::button("primary").size("sm").html("Get openSUSE") %>
+                            </div>
+                        </div>
+                        <div class="absolute bottom-0 left-0 h-0.5 bg-accent-500" style="width: 34%"></div>
+                    </div>
+
+                    <%# Post %>
+                    <article class="bg-white dark:bg-ink-900 px-6 py-12">
+                        <div class="max-w-[68ch] mx-auto">
+                            <div class="flex items-center gap-3 text-xs uppercase tracking-wide text-ink-500 dark:text-ink-400">
+                                <%- ui::badge("success", "sm", "Linux") %>
+                                <span>22 April 2026 · 6 min read</span>
+                            </div>
+                            <h1 class="mt-4 text-4xl font-extrabold tracking-tight text-ink-900 dark:text-ink-50">
+                                Migrating from Ghost to Laravel without losing a single URL
+                            </h1>
+                            <p class="mt-4 font-serif text-lg text-ink-600 dark:text-ink-300 leading-relaxed">
+                                A tactical, boring, un-glamorous guide. The kind sysadmins deserve.
+                            </p>
+                            <div class="mt-8 space-y-5 font-serif text-lg leading-[1.75] text-ink-800 dark:text-ink-100">
+                                <p class="first-letter:float-left first-letter:mr-3 first-letter:text-6xl first-letter:font-bold first-letter:font-serif first-letter:text-ink-800 first-letter:leading-none dark:first-letter:text-ink-100">
+                                    I had put off the migration for three years. Ghost was fine. The writing still reached people. But every time I wanted to change something small — a heading style, an RSS field, the comment system — I had to dig through a platform that wasn't mine.
+                                </p>
+                                <p>
+                                    So on a Sunday afternoon in April, with nothing on the calendar and a fresh pot of coffee, I started. The ground rules were simple: <strong>zero broken permalinks</strong>, one command to deploy, and a stack I could debug in my sleep.
+                                </p>
+                                <blockquote class="border-l-4 border-accent-500 pl-4 text-ink-700 dark:text-ink-200 italic">
+                                    The measure of a good tool is whether you can still fix it when you're tired.
+                                </blockquote>
+                                <p>
+                                    The old posts were in <code class="font-mono text-[0.9em] bg-ink-50 text-ink-800 px-1.5 py-0.5 rounded dark:bg-ink-800 dark:text-ink-100">mobiledoc</code> format, which is nobody's idea of a good time. I wrote a tiny converter:
+                                </p>
+                                <pre class="bg-ink-900 text-ink-50 rounded-lg p-5 overflow-x-auto text-sm font-mono"><code>$ php artisan posts:import \
+    --from=ghost.json \
+    --strategy=preserve-slugs \
+    --backfill-redirects</code></pre>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+
+                <%# Post card preview %>
+                <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <% for (tag, title, excerpt) in [
+                        ("Linux", "How I survived an out-of-band kernel panic at 2am", "The story of a single SSH session, three coffees, and the sysctl flag I should have set years ago."),
+                        ("openSUSE", "openSUSE Leap 16 at a glance", "A field report from the conference booth and my own workstation upgrade."),
+                    ] { %>
+                        <article class="group rounded-lg overflow-hidden border border-surface-200 bg-white hover:shadow-md transition-shadow duration-[var(--duration-base)] dark:bg-ink-900 dark:border-ink-700">
+                            <div class="aspect-[16/9] bg-gradient-to-br from-ink-700 to-ink-900 flex items-center justify-center text-ink-300">
+                                <svg class="w-10 h-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M7 8l3 3-3 3M13 14h4"/></svg>
+                            </div>
+                            <div class="p-5">
+                                <%- ui::badge("success", "sm", tag) %>
+                                <h3 class="mt-3 text-xl font-semibold text-ink-900 dark:text-ink-50 group-hover:text-accent-700 transition-colors"><%= title %></h3>
+                                <p class="mt-2 text-sm text-ink-500 dark:text-ink-300"><%= excerpt %></p>
+                                <div class="mt-4 flex items-center gap-2 text-xs text-ink-500">
+                                    <span class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-ink-800 text-white text-[10px] font-semibold">IS</span>
+                                    <span class="font-medium text-ink-700 dark:text-ink-200">Ish Sookun</span>
+                                    <span aria-hidden="true">·</span>
+                                    <span>4 min read</span>
+                                </div>
+                            </div>
+                        </article>
+                    <% } %>
+                </div>
+            </section>
+
+            <%# Footer %>
+            <footer class="pt-10 pb-16 border-t border-surface-200 dark:border-ink-800 text-center text-xs text-ink-500 dark:text-ink-400">
+                <p>SysAdmin Journal brand system · v1.0 preview · Ink · Accent · Surface · Danger · Warning</p>
+            </footer>
+        </div>
+    </main>
+</div>

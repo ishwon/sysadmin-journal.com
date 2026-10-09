@@ -1,0 +1,19 @@
+<article class="px-6 pt-16 pb-24">
+    <header class="max-w-measure mx-auto">
+        <p class="eyebrow">/<%= post.slug %>/</p>
+        <h1 class="display text-4xl md:text-[52px] md:leading-[1.08] mt-4"><%= post.title %></h1>
+    </header>
+
+    <% if let Some(image) = post.feature_image.as_deref().filter(|i| !i.is_empty()) { %>
+        <figure class="mt-10 max-w-4xl mx-auto">
+            <img class="w-full border-b border-ink-100" src="<%= image %>" alt="<%= s(&post.feature_image_alt) %>" loading="eager">
+            <% if let Some(caption) = post.feature_image_caption.as_deref().filter(|c| !c.is_empty()) { %>
+                <figcaption class="mt-2.5 meta leading-relaxed"><%- caption %></figcaption>
+            <% } %>
+        </figure>
+    <% } %>
+
+    <div class="prose-brand mt-10 max-w-measure mx-auto">
+        <%- s(&post.html) %>
+    </div>
+</article>

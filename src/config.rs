@@ -17,7 +17,6 @@ pub struct Config {
     pub bcrypt_rounds: u32,
     pub public_dir: PathBuf,
     pub media_dir: PathBuf,
-    pub templates_dir: PathBuf,
     /// Raw key material used to sign cookies (remember-me).
     pub key: Vec<u8>,
 }
@@ -45,14 +44,9 @@ impl Config {
                 .context("BCRYPT_ROUNDS must be a number")?,
             public_dir: PathBuf::from(var_or("PUBLIC_DIR", "public")),
             media_dir: PathBuf::from(var_or("MEDIA_DIR", "storage/app/public")),
-            templates_dir: PathBuf::from(var_or("TEMPLATES_DIR", "templates")),
             app_env,
             key,
         })
-    }
-
-    pub fn is_local(&self) -> bool {
-        self.app_env == "local"
     }
 
     /// Absolute URL for a site path, mirroring Laravel's `url($path)`.

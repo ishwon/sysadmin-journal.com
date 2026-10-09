@@ -1,0 +1,67 @@
+<div class="flex flex-wrap border-b border-ink-100">
+    <%- ui::stat_card("posts", &post_count.to_string(), None, None) %>
+    <%- ui::stat_card("published", &published_count.to_string(), None, None) %>
+    <%- ui::stat_card("pages", &page_count.to_string(), None, None) %>
+    <%- ui::stat_card("galleries", &gallery_count.to_string(), None, None) %>
+    <%- ui::stat_card("tags", &tag_count.to_string(), None, None) %>
+    <%- ui::stat_card("users", &user_count.to_string(), None, None) %>
+</div>
+
+<div class="mt-10 grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-16">
+    <section>
+        <div class="flex justify-between items-baseline pb-3 border-b border-ink-100">
+            <h2 class="eyebrow">/recent-posts/</h2>
+            <a href="/dashboard/posts" class="meta link-rise">all posts →</a>
+        </div>
+        <% if recent_posts.is_empty() { %>
+            <p class="py-6 meta">no posts yet — <a href="/dashboard/posts/create" class="link-rise">write the first one</a></p>
+        <% } %>
+        <% for post in &recent_posts { %>
+            <a href="/dashboard/posts/<%= post.id %>/edit" class="grid grid-cols-[minmax(0,1fr)_auto_auto] gap-4 items-baseline py-3.5 border-b border-surface-50 text-ink-900 hover:text-accent-700 transition-colors">
+                <span class="font-display text-lg truncate"><%= post.title %></span>
+                <%- ui::status_badge(&post.status) %>
+                <span class="meta"><%= date_or(&post.published_at, &post.updated_at, "j M Y") %></span>
+            </a>
+        <% } %>
+    </section>
+
+    <section>
+        <div class="pb-3 border-b border-ink-100"><h2 class="eyebrow">/housekeeping/</h2></div>
+        <div class="flex items-center justify-between gap-4 py-3.5 border-b border-surface-50">
+            <div>
+                <p class="text-sm font-medium text-ink-900">New post</p>
+                <p class="meta mt-0.5">markdown or html</p>
+            </div>
+            <%- ui::button("primary").size("sm").href("/dashboard/posts/create").html("Write") %>
+        </div>
+        <div class="flex items-center justify-between gap-4 py-3.5 border-b border-surface-50">
+            <div>
+                <p class="text-sm font-medium text-ink-900">Sitemap</p>
+                <p class="meta mt-0.5">
+                    <% if sitemap_exists { %> live at <a href="/sitemap.xml" target="_blank" class="link-rise">/sitemap.xml</a> <% } else { %> not generated yet <% } %>
+                </p>
+            </div>
+            <form method="POST" action="/dashboard/sitemap/generate">
+                <%- base.csrf_field() %>
+                <%- ui::button("secondary").size("sm").submit().html(if sitemap_exists { "Regenerate" } else { "Generate" }) %>
+            </form>
+        </div>
+        <div class="flex items-center justify-between gap-4 py-3.5 border-b border-surface-50">
+            <div>
+                <p class="text-sm font-medium text-ink-900">New page · gallery</p>
+                <p class="meta mt-0.5">static content and photo sets</p>
+            </div>
+            <div class="flex gap-2">
+                <%- ui::button("secondary").size("sm").href("/dashboard/pages/create").html("Page") %>
+                <%- ui::button("secondary").size("sm").href("/dashboard/galleries/create").html("Gallery") %>
+            </div>
+        </div>
+        <div class="flex items-center justify-between gap-4 py-3.5 border-b border-surface-50">
+            <div>
+                <p class="text-sm font-medium text-ink-900">Ghost import</p>
+                <p class="meta mt-0.5">run from the shell</p>
+            </div>
+            <code class="font-mono text-[11px] bg-surface-50 px-1.5 py-0.5 rounded-xs text-ink-700">sysadmin-journal ghost-import</code>
+        </div>
+    </section>
+</div>

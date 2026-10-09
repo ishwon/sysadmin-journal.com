@@ -1,6 +1,5 @@
 use axum::extract::Path;
 use axum::response::Response;
-use minijinja::context;
 
 use super::{PER_PAGE, process_content};
 use crate::http::form::FormData;
@@ -10,41 +9,58 @@ use crate::models::post::{Order, Post, PostInput, PostQuery};
 use crate::support::dates;
 use crate::support::pagination::Page;
 use crate::support::text;
+use crate::views::layouts::DashboardPage;
+use crate::views::pages::{PageForm, PagesAdmin};
+use crate::views::{render, ui};
 
 /// `GET /dashboard/pages`.
 pub async fn index(ctx: Ctx) -> Result<Response, AppError> {
     let db = ctx.db();
-    let page = ctx.page();
+    let page = ctx.page_number();
     let (pages, total) = PostQuery::new()
         .pages()
         .order(Order::UpdatedDesc)
         .paginate(db, PER_PAGE, page)
         .await?;
     let pages = Page::new(pages, total, PER_PAGE, page, &ctx.path, &ctx.query);
-    ctx.render_dashboard(
-        "dashboard/pages/index.html",
-        context! { title => "Pages", page_title => "Pages", pages },
-    )
-    .await
+    let base = ctx.base();
+    let content = render(PagesAdmin { base: &base, pages })?;
+    let page = DashboardPage::new("Pages", content)
+        .heading("Pages")
+        .actions(
+            ui::button("primary")
+                .size("sm")
+                .href("/dashboard/pages/create")
+                .html("New page"),
+        );
+    ctx.dashboard(&base, page).await
+}
+
+async fn form_page(ctx: &Ctx, title: &str, page: Option<Post>) -> Result<Response, AppError> {
+    let (action, editing) = match &page {
+        Some(p) => (format!("/dashboard/pages/{}", p.id), true),
+        None => ("/dashboard/pages".to_string(), false),
+    };
+    let base = ctx.base();
+    let content = render(PageForm {
+        base: &base,
+        page,
+        action,
+        editing,
+    })?;
+    ctx.dashboard(&base, DashboardPage::new(title, content))
+        .await
 }
 
 /// `GET /dashboard/pages/create`.
 pub async fn create(ctx: Ctx) -> Result<Response, AppError> {
-    ctx.render_dashboard(
-        "dashboard/pages/create.html",
-        context! { title => "New Page", page => minijinja::Value::UNDEFINED },
-    )
-    .await
+    form_page(&ctx, "New Page", None).await
 }
 
 /// `GET /dashboard/pages/{id}/edit`.
 pub async fn edit(ctx: Ctx, Path(id): Path<i64>) -> Result<Response, AppError> {
     let page = Post::find(ctx.db(), id).await?.ok_or(AppError::NotFound)?;
-    ctx.render_dashboard(
-        "dashboard/pages/edit.html",
-        context! { title => "Edit Page", page },
-    )
-    .await
+    form_page(&ctx, "Edit Page", Some(page)).await
 }
 
 fn validate(form: &FormData) -> Validator {

@@ -8,7 +8,6 @@ pub mod tags;
 pub mod users;
 
 use axum::response::Response;
-use minijinja::context;
 
 use crate::http::{AppError, Ctx};
 use crate::models::gallery::Gallery;
@@ -16,6 +15,9 @@ use crate::models::post::{Order, Post, PostQuery};
 use crate::models::tag::Tag;
 use crate::models::user::User;
 use crate::support::dates;
+use crate::views::layouts::DashboardPage;
+use crate::views::pages::DashboardIndex;
+use crate::views::render;
 
 pub const PER_PAGE: i64 = 20;
 
@@ -44,23 +46,25 @@ pub async fn index(ctx: Ctx) -> Result<Response, AppError> {
         .map(|u| u.name.split(' ').next().unwrap_or("there").to_string())
         .unwrap_or_else(|| "there".into());
 
-    ctx.render_dashboard(
-        "dashboard/index.html",
-        context! {
-            title => "Dashboard",
-            page_title => format!("{greeting}, {first_name}."),
-            today => dates::php_format(dates::now(), "l, j F Y"),
-            post_count => PostQuery::new().posts().count(db).await?,
-            published_count => PostQuery::new().posts().published().count(db).await?,
-            page_count => PostQuery::new().pages().count(db).await?,
-            gallery_count => Gallery::count(db).await?,
-            tag_count => Tag::count(db).await?,
-            user_count => User::count(db).await?,
-            sitemap_exists,
-            recent_posts,
-        },
-    )
-    .await
+    let base = ctx.base();
+    let content = render(DashboardIndex {
+        base: &base,
+        post_count: PostQuery::new().posts().count(db).await?,
+        published_count: PostQuery::new().posts().published().count(db).await?,
+        page_count: PostQuery::new().pages().count(db).await?,
+        gallery_count: Gallery::count(db).await?,
+        tag_count: Tag::count(db).await?,
+        user_count: User::count(db).await?,
+        sitemap_exists,
+        recent_posts,
+    })?;
+    let page = DashboardPage::new("Dashboard", content)
+        .heading(format!("{greeting}, {first_name}."))
+        .aside(format!(
+            "<div><p class=\"meta\">{}</p></div>",
+            dates::php_format(dates::now(), "l, j F Y")
+        ));
+    ctx.dashboard(&base, page).await
 }
 
 /// Convert editor content to HTML according to the chosen format.

@@ -1,0 +1,9 @@
+<% if posts.has_pages { %>
+    <nav class="pt-6 flex items-center justify-between meta" aria-label="Pagination">
+        <span>page <%= posts.current_page %> / <%= posts.last_page %></span>
+        <div class="flex gap-6">
+            <% if let Some(url) = &posts.prev_url { %><a href="<%= url %>" class="link-rise">← newer posts</a><% } %>
+            <% if let Some(url) = &posts.next_url { %><a href="<%= url %>" class="link-rise">older posts →</a><% } %>
+        </div>
+    </nav>
+<% } %>

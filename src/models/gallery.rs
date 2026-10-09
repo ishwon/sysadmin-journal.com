@@ -43,6 +43,22 @@ pub struct GalleryWithImages {
     pub images: Vec<GalleryImage>,
 }
 
+impl std::ops::Deref for GalleryWithCount {
+    type Target = Gallery;
+
+    fn deref(&self) -> &Gallery {
+        &self.gallery
+    }
+}
+
+impl std::ops::Deref for GalleryWithImages {
+    type Target = Gallery;
+
+    fn deref(&self) -> &Gallery {
+        &self.gallery
+    }
+}
+
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct GalleryImageInput {
     pub path: String,

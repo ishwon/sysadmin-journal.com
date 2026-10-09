@@ -1,6 +1,5 @@
 use axum::extract::Path;
 use axum::response::Response;
-use minijinja::context;
 
 use super::PER_PAGE;
 use crate::http::form::FormData;
@@ -9,36 +8,53 @@ use crate::http::{AppError, Ctx};
 use crate::models::user::{User, UserInput};
 use crate::support::pagination::Page;
 use crate::support::text;
+use crate::views::layouts::DashboardPage;
+use crate::views::pages::{UserForm, UsersAdmin};
+use crate::views::{render, ui};
 
 /// `GET /dashboard/users`.
 pub async fn index(ctx: Ctx) -> Result<Response, AppError> {
-    let page = ctx.page();
+    let page = ctx.page_number();
     let (users, total) = User::paginate_with_counts(ctx.db(), PER_PAGE, page).await?;
     let users = Page::new(users, total, PER_PAGE, page, &ctx.path, &ctx.query);
-    ctx.render_dashboard(
-        "dashboard/users/index.html",
-        context! { title => "Users", page_title => "Users", users },
-    )
-    .await
+    let base = ctx.base();
+    let content = render(UsersAdmin { base: &base, users })?;
+    let page = DashboardPage::new("Users", content)
+        .heading("Users")
+        .actions(
+            ui::button("primary")
+                .size("sm")
+                .href("/dashboard/users/create")
+                .html("New user"),
+        );
+    ctx.dashboard(&base, page).await
+}
+
+async fn form_page(ctx: &Ctx, title: &str, user: Option<User>) -> Result<Response, AppError> {
+    let (action, editing) = match &user {
+        Some(u) => (format!("/dashboard/users/{}", u.id), true),
+        None => ("/dashboard/users".to_string(), false),
+    };
+    let base = ctx.base();
+    let content = render(UserForm {
+        base: &base,
+        user,
+        action,
+        editing,
+    })?;
+    ctx.dashboard(&base, DashboardPage::new(title, content))
+        .await
 }
 
 /// `GET /dashboard/users/create`.
 pub async fn create(ctx: Ctx) -> Result<Response, AppError> {
-    ctx.render_dashboard(
-        "dashboard/users/create.html",
-        context! { title => "New User", user => minijinja::Value::UNDEFINED },
-    )
-    .await
+    form_page(&ctx, "New User", None).await
 }
 
 /// `GET /dashboard/users/{id}/edit`.
 pub async fn edit(ctx: Ctx, Path(id): Path<i64>) -> Result<Response, AppError> {
     let user = User::find(ctx.db(), id).await?.ok_or(AppError::NotFound)?;
-    ctx.render_dashboard(
-        "dashboard/users/edit.html",
-        context! { title => "Edit User", user },
-    )
-    .await
+    form_page(&ctx, "Edit User", Some(user)).await
 }
 
 async fn validate(
